@@ -85,29 +85,31 @@
   #splash .names .c{display:inline-block;font-size:min(4.2vw,20px);font-weight:800;margin-top:10px;letter-spacing:.3em;
     padding:4px 14px 4px 18px;border:2px solid #fff;border-radius:999px}
   #splash.hide{opacity:0;pointer-events:none}
-  #splash .stage1{display:flex;flex-direction:column;align-items:center;transition:opacity .35s ease, transform .35s ease}
-  #splash.s1out .stage1{opacity:0;transform:scale(.92)}
+  #splash .stage1{display:flex;flex-direction:column;align-items:center;position:relative;z-index:1}
+  #splash .stage1 .logos,#splash .stage1 .names{transition:transform .5s cubic-bezier(.3,1.5,.5,1) .12s}
+  #splash.s1out .stage1 .logos{transform:translateY(var(--ly,-31vh)) scale(var(--ls,.72))}
+  #splash.s1out .stage1 .names{transform:translateY(var(--ny,30vh))}
   /* バレーボール */
   #splash .ballwrap{position:absolute;left:50%;top:50%;width:min(95vmin,620px);height:min(95vmin,620px);
     margin:calc(min(95vmin,620px)/-2) 0 0 calc(min(95vmin,620px)/-2);opacity:0;pointer-events:none;z-index:2}
   #splash .ballwrap svg{width:100%;height:100%;filter:drop-shadow(0 20px 30px rgba(0,0,0,.45))}
   #splash.ballgo .ballwrap{animation:spike .62s cubic-bezier(.55,0,.95,.5) both}
-  #splash.impact .ballwrap{animation:bounceOff .7s cubic-bezier(.2,.7,.3,1) both}
+  #splash.impact .ballwrap{animation:settle 1.9s linear both}
   @keyframes spike{0%{opacity:0;transform:translate(30vw,-38vh) scale(.04) rotate(0)}
     8%{opacity:1}100%{opacity:1;transform:translate(0,0) scale(1) rotate(620deg)}}
-  @keyframes bounceOff{0%{opacity:1;transform:scale(1.08,.94) rotate(620deg)}
-    18%{opacity:1;transform:scale(1.02) rotate(630deg)}100%{opacity:0;transform:translate(-8vw,30vh) scale(.25) rotate(760deg)}}
+  @keyframes settle{
+    0%{opacity:1;transform:translate(0,0) scale(1.08,.94) rotate(620deg);animation-timing-function:ease-out}
+    10%{transform:translate(0,0) scale(1) rotate(630deg);animation-timing-function:cubic-bezier(.5,0,1,.6)}
+    38%{transform:translate(calc(var(--bx,30vw)*-.35),var(--by,30vh)) scale(var(--bf,.2),calc(var(--bf,.2)*.85)) rotate(700deg);animation-timing-function:cubic-bezier(0,.4,.5,1)}
+    50%{transform:translate(calc(var(--bx,30vw)*-.1),calc(var(--by,30vh) - 9vh)) scale(var(--bf,.2)) rotate(760deg);animation-timing-function:cubic-bezier(.5,0,1,.6)}
+    62%{transform:translate(calc(var(--bx,30vw)*.15),var(--by,30vh)) scale(var(--bf,.2),calc(var(--bf,.2)*.92)) rotate(820deg);animation-timing-function:cubic-bezier(0,.4,.5,1)}
+    70%{transform:translate(calc(var(--bx,30vw)*.3),calc(var(--by,30vh) - 2.5vh)) scale(var(--bf,.2)) rotate(860deg);animation-timing-function:cubic-bezier(.5,0,1,.6)}
+    77%{transform:translate(calc(var(--bx,30vw)*.45),var(--by,30vh)) scale(var(--bf,.2)) rotate(900deg);animation-timing-function:cubic-bezier(.2,.6,.4,1)}
+    100%{opacity:1;transform:translate(var(--bx,30vw),var(--by,30vh)) scale(var(--bf,.2)) rotate(1080deg)}}
   /* 画面に当たった演出 */
   #splash .flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:3}
   #splash.impact .flash{animation:flash .45s ease-out both}
   @keyframes flash{0%{opacity:.95}100%{opacity:0}}
-  #splash .crack{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:0;z-index:3}
-  #splash.impact .crack{opacity:1;animation:crackOut 2.2s ease .5s both}
-  #splash .crack path{stroke:#fff;stroke-width:2.5px;vector-effect:non-scaling-stroke;fill:none;stroke-linecap:round;stroke-dasharray:200;stroke-dashoffset:200;
-    filter:drop-shadow(0 0 3px rgba(0,0,0,.5))}
-  #splash.impact .crack path{animation:draw .25s ease-out both}
-  @keyframes draw{to{stroke-dashoffset:0}}
-  @keyframes crackOut{0%{opacity:1}100%{opacity:.25}}
   #splash.impact{animation:shake .45s cubic-bezier(.36,.07,.19,.97) both}
   @keyframes shake{10%,90%{transform:translate(-2px,1px)}20%,80%{transform:translate(5px,-3px)}
     30%,50%,70%{transform:translate(-9px,4px)}40%,60%{transform:translate(9px,-4px)}}
@@ -175,12 +177,6 @@
     </svg>
   </div>
   <div class="flash"></div>
-  <svg class="crack" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-    <path d="M50 50 L62 41 L71 43 L84 30 L100 26"/><path d="M50 50 L58 60 L56 72 L66 86 L64 100"/>
-    <path d="M50 50 L39 57 L30 55 L18 66 L0 70"/><path d="M50 50 L44 38 L47 26 L36 12 L38 0"/>
-    <path d="M50 50 L64 53 L78 62 L100 60"/><path d="M50 50 L36 44 L22 34 L0 33"/>
-    <path d="M62 41 L66 32 L64 22"/><path d="M39 57 L37 68 L28 80"/>
-  </svg>
   <div class="challenge">
     <div class="ct" id="spCt">クイズに<br>チャレンジ！！</div>
     <div class="tap" id="spTap">タップしてスタート</div>
@@ -540,15 +536,39 @@ function showCheckConfirm(){
   const clear = () => { timers.forEach(clearTimeout); timers = []; };
   function toBall(){
     if (stage >= 2) return; stage = 2; clear();
+    placeEdges();
     sp.classList.add("s1out", "ballgo");
     later(toImpact, 620);
+  }
+  function placeEdges(){
+    // ロゴは画面の上へ、文字は画面の下へ（画面の大きさに合わせて計算）
+    const H = window.innerHeight, m = Math.max(14, H*0.04);
+    const lg = sp.querySelector(".logos"), nm = sp.querySelector(".names");
+    if (lg){
+      const r = lg.getBoundingClientRect();
+      const sc = Math.min(0.72, (H*0.24)/r.height);
+      sp.style.setProperty("--ls", sc);
+      sp.style.setProperty("--ly", (m + r.height*sc/2 - (r.top + r.height/2)) + "px");
+    }
+    let namesTop = H - m;
+    if (nm){
+      const r = nm.getBoundingClientRect();
+      sp.style.setProperty("--ny", ((H - m - r.height/2) - (r.top + r.height/2)) + "px");
+      namesTop = H - m - r.height;
+    }
+    // ボールが止まる場所：右下、文字のすぐ上
+    const W = window.innerWidth, S = Math.min(Math.min(W,H)*0.95, 620);
+    const d = Math.max(60, Math.min(W*0.22, H*0.13, 130)), f = d/S;
+    sp.style.setProperty("--bf", f);
+    sp.style.setProperty("--bx", (W/2 - d/2 - Math.max(16, W*0.06)) + "px");
+    sp.style.setProperty("--by", (namesTop - 12 - d/2 - H/2) + "px");
   }
   function toImpact(){
     if (stage >= 3) return; stage = 3; clear();
     const L = TXT[lang] || TXT.ja;
     document.getElementById("spCt").innerHTML = L.ct;
     document.getElementById("spTap").textContent = L.tap;
-    sp.classList.add("s1out");
+    if (!sp.classList.contains("s1out")){ placeEdges(); sp.classList.add("s1out"); }
     sp.classList.remove("ballgo"); void sp.offsetWidth;
     sp.classList.add("impact");
     try{ if (navigator.vibrate) navigator.vibrate(60); }catch(e){}
