@@ -13,9 +13,11 @@
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif;
     background:var(--bg);color:#1f2937;line-height:1.6;min-height:100vh;-webkit-text-size-adjust:100%}
-  header{background:linear-gradient(135deg,var(--blue-dark),var(--blue));color:#fff;padding:12px 16px 14px;text-align:center;position:relative}
-  header .sub{font-size:12px;opacity:.85;letter-spacing:.03em}
-  header h1{font-size:18px;font-weight:800;margin-top:2px}
+  header{background:linear-gradient(135deg,var(--blue-dark),var(--blue));color:#fff;
+    padding:calc(14px + env(safe-area-inset-top)) 16px 14px;text-align:center;position:relative}
+  header .sub{display:inline-block;font-size:13px;font-weight:700;letter-spacing:.02em;
+    background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.45);border-radius:999px;padding:3px 14px}
+  header h1{font-size:21px;font-weight:900;margin-top:8px;line-height:1.35}
   .lang{display:inline-flex;margin-top:8px;background:rgba(255,255,255,.18);border-radius:999px;padding:3px}
   .lang button{border:none;background:none;color:#fff;font-family:inherit;font-size:13px;font-weight:700;
     padding:4px 14px;border-radius:999px;cursor:pointer}
@@ -45,9 +47,19 @@
   .progress{display:flex;gap:5px;margin-bottom:14px}
   .progress span{flex:1;height:6px;border-radius:3px;background:var(--line)}
   .progress span.done{background:var(--blue)}
-  .qno{font-size:13px;color:var(--blue);font-weight:700}
-  .qtext{font-size:19px;font-weight:800;margin:4px 0 6px;line-height:1.5}
-  .qhint{font-size:13px;color:var(--gray);margin-bottom:14px}
+  .qno{font-size:14px;color:var(--blue);font-weight:800;margin-bottom:8px}
+  .askbox{background:var(--blue-light);border-left:6px solid var(--blue);border-radius:10px;padding:12px 14px;margin-bottom:14px}
+  .askbox .lbl{font-size:12px;font-weight:700;color:var(--blue)}
+  .qtext{font-size:19px;font-weight:800;margin-top:2px;line-height:1.5;color:#1f2937}
+  .guide{background:#fff6e0;border:2px solid #f5c400;border-radius:12px;padding:10px 14px;margin-bottom:14px}
+  .guide .who{font-size:17px;font-weight:900;color:var(--blue-dark)}
+  .guide .how{font-size:14px;font-weight:700;color:#7a5a00;margin-top:2px}
+  .steps{list-style:none;margin-top:12px;display:flex;flex-direction:column;gap:8px}
+  .steps li{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+  .steps .num{flex:none;width:26px;height:26px;border-radius:50%;background:var(--blue);color:#fff;font-weight:800;
+    font-size:14px;display:flex;align-items:center;justify-content:center;margin-top:1px}
+  .rule{margin-top:14px;background:#fdecec;color:var(--red);border-radius:10px;padding:8px 12px;font-size:14px;font-weight:800;text-align:center}
+  .sub-hint{font-size:14px;color:var(--gray);margin:-4px 0 12px}
   .player-tag{display:inline-block;background:var(--blue-dark);color:#fff;border-radius:999px;padding:3px 12px;font-size:13px;margin-bottom:10px}
   input[type=text]{width:100%;font-size:26px;text-align:center;padding:14px;border:2px solid var(--line);border-radius:12px;font-family:inherit}
   input[type=text]:focus{outline:none;border-color:var(--blue)}
@@ -243,10 +255,16 @@ const T = {
     sub:"大阪ブルテオン × 枚方寝屋川消防組合", title:"選手アンケート 答え当てクイズ",
     foot:"大阪ブルテオン × 枚方寝屋川消防組合 コラボ企画",
     introH:"選手の答えを当てよう！",
-    intro:n=>`大阪ブルテオンの選手が答えた<strong style="white-space:nowrap">コラボ企画アンケート</strong><br>選手を1人選んで、その選手がどう答えたかを予想してね。全${n}問です。<br><strong>挑戦できるのは1人1回・1人の選手だけ</strong>です。`,
-    chooseH:"どの選手の答えを当てる？", preparing:"準備中", allPreparing:"ただいま準備中です。もう少し待ってね。",
+    intro:n=>`大阪ブルテオンの選手に、消防のアンケートに答えてもらいました。<br>その選手が<strong>どう答えたか</strong>を予想するクイズです（全${n}問）。`,
+    steps:["答えを当てたい選手を<b>1人</b>選ぶ","その選手がアンケートで選んだ答えを予想してタップ","最後に何問当たったかが出るので、<b>係員に見せてね</b>"],
+    rule:"挑戦できるのは1人1回・選手は1人だけ",
+    chooseH:"どの選手の答えを当てる？", chooseHint:"選手の名前をタップしてね", preparing:"準備中", allPreparing:"ただいま準備中です。もう少し待ってね。",
     sama:" 選手", answerOf:p=>`${p} 選手の答えは？`, qno:(i,n)=>`第${i}問 / 全${n}問`,
-    hintChoice:"選手が選んだと思うものをタップ", hintKanji:"漢字1文字（または1単語）を入れてね", placeholder:"例：守",
+    askLbl:"選手へのアンケートの質問",
+    who:p=>`${p} 選手の答えは？`,
+    hintChoice:"選手が選んだと思う答えを、下から1つタップしてね",
+    hintPlayer:"選手が名前をあげたと思う選手を、下から1人タップしてね",
+    hintKanji:"選手が書いたと思う漢字1文字（または1単語）を入れてね", placeholder:"例：守",
     back:"戻る", toTop:"選手選びへ", next:"次へ", check:"答え合わせ！",
     correctOf:(ok,n)=>`<small> / ${n}問 正解</small>`, review:"答え合わせ",
     qlabel:i=>`第${i}問`, theirs:"選手の答え", yours:"あなた", reason:"理由",
@@ -263,13 +281,19 @@ const T = {
     loadErr:"答えのデータを読み込めませんでした。", loadErr2:"時間をおいて、もう一度ひらいてください。"
   },
   en:{
-    sub:"OSAKA BLUTEON × Hirakata Neyagawa Fire Department Joint Collaboration Survey", title:"Guess the Player's Answers!",
+    sub:"OSAKA BLUTEON × Hirakata Neyagawa Fire Dept.", title:"Guess the Player's Answers!",
     foot:"OSAKA BLUTEON × Hirakata Neyagawa Fire Department Collaboration",
     introH:"Can you guess their answers?",
-    intro:n=>`Osaka Bluteon players answered a <strong>collaboration survey</strong>.<br>Pick a player and guess how they answered. ${n} questions in total.<br><strong>One try per person, with one player only.</strong>`,
-    chooseH:"Choose a player", preparing:"Coming soon", allPreparing:"Coming soon. Please check back later!",
+    intro:n=>`Osaka Bluteon players answered a survey from the fire department.<br>Guess <strong>how a player answered</strong> (${n} questions).`,
+    steps:["Choose <b>one</b> player","Tap the answer you think the player chose","See how many you got right and <b>show it to a staff member</b>"],
+    rule:"One try per person, with one player only",
+    chooseH:"Choose a player", chooseHint:"Tap a player's name", preparing:"Coming soon", allPreparing:"Coming soon. Please check back later!",
     sama:"", answerOf:p=>`How did ${p} answer?`, qno:(i,n)=>`Question ${i} of ${n}`,
-    hintChoice:"Tap what you think the player chose", hintKanji:"Type one word", placeholder:"e.g. Hero",
+    askLbl:"Survey question to the player",
+    who:p=>`How did ${p} answer?`,
+    hintChoice:"Tap the answer you think the player chose",
+    hintPlayer:"Tap the player you think they named",
+    hintKanji:"Type the word you think the player wrote", placeholder:"e.g. Hero",
     back:"Back", toTop:"Players", next:"Next", check:"See results!",
     correctOf:(ok,n)=>`<small> / ${n} correct</small>`, review:"Answers",
     qlabel:i=>`Q${i}`, theirs:"Player", yours:"You", reason:"Reason",
@@ -352,9 +376,12 @@ function showTop(){
     <div class="card">
       <h2>${t().introH}</h2>
       <p class="lead">${t().intro(QUESTIONS.length)}</p>
+      <ol class="steps">${t().steps.map((x,i)=>`<li><span class="num">${i+1}</span><span>${x}</span></li>`).join("")}</ol>
+      <div class="rule">${t().rule}</div>
     </div>
     <div class="card">
       <h2>${t().chooseH}</h2>
+      <div class="sub-hint">${t().chooseHint}</div>
       ${readyCount === 0 ? `<p class="muted">${t().allPreparing}</p>` : ""}
       <div class="grid">
         ${PLAYERS.map((p,i) => `
@@ -400,7 +427,7 @@ function showQuestion(){
       `<button class="opt ${cur===o.ja?"sel":""}" data-v="${esc(o.ja)}">${esc(o[lang])}</button>`).join("")}</div>`;
   } else if (q.type === "player"){
     body = `<div class="grid">${PLAYERS.map(p =>
-      `<button class="opt ${cur===p.ja?"sel":""}" data-v="${esc(p.ja)}">${esc(p[lang]).replace(/・/g,"・<wbr>")}</button>`).join("")}</div>`;
+      `<button class="opt ${cur===p.ja?"sel":""}" data-v="${esc(p.ja)}">${esc(p[lang]).replace(/・/g,"・<wbr>")}${lang==="ja" ? "<wbr> 選手" : ""}</button>`).join("")}</div>`;
   } else {
     body = `<input type="text" id="kanji" maxlength="20" placeholder="${esc(t().placeholder)}" value="${esc(cur)}" autocomplete="off">`;
   }
@@ -408,10 +435,15 @@ function showQuestion(){
   app.innerHTML = `
     <div class="card">
       <div class="progress">${QUESTIONS.map((_,i)=>`<span class="${i<=state.step?"done":""}"></span>`).join("")}</div>
-      <span class="player-tag">${esc(t().answerOf(pName(state.player)))}</span>
       <div class="qno">${t().qno(state.step+1, QUESTIONS.length)}</div>
-      <div class="qtext">${esc(q[lang])}</div>
-      <div class="qhint">${q.type==="kanji" ? t().hintKanji : t().hintChoice}</div>
+      <div class="askbox">
+        <div class="lbl">${t().askLbl}</div>
+        <div class="qtext">${esc(q[lang])}</div>
+      </div>
+      <div class="guide">
+        <div class="who">${esc(t().who(pName(state.player)))}</div>
+        <div class="how">${q.type==="kanji" ? t().hintKanji : q.type==="player" ? t().hintPlayer : t().hintChoice}</div>
+      </div>
       ${body}
       <div class="btn-row">
         ${state.step===0 ? "" : `<button class="btn btn-sub" id="back">${t().back}</button>`}
