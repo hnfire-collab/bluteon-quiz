@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>管理者画面｜選手アンケートクイズ</title>
+<style>
+  :root{--blue:#1446a0;--blue-dark:#0b2a66;--blue-light:#e8f0ff;--red:#d62828;--green:#1a9e5c;--gray:#6b7280;--line:#d6deec;--bg:#f4f7fc}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif;background:var(--bg);color:#1f2937;line-height:1.6}
+  header{background:var(--blue-dark);color:#fff;padding:12px 16px;text-align:center}
+  header h1{font-size:17px}
+  main{max-width:640px;margin:0 auto;padding:16px 16px 60px}
+  .card{background:#fff;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(11,42,102,.08);margin-bottom:14px}
+  h2{font-size:16px;color:var(--blue-dark);margin-bottom:8px}
+  .muted{color:var(--gray);font-size:13px}
+  .players{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .pbtn{border:2px solid var(--line);background:#fff;border-radius:10px;padding:9px 8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;text-align:left}
+  .pbtn.sel{border-color:var(--blue);background:var(--blue-light)}
+  .pbtn .st{display:block;font-size:11px;font-weight:400}
+  .st.done{color:var(--green)} .st.part{color:#c27c00} .st.none{color:var(--gray)}
+  .q{border-top:1px solid var(--line);padding:12px 0}
+  .q:first-of-type{border-top:none}
+  label{display:block;font-size:14px;font-weight:700;margin-bottom:6px}
+  select,input[type=text],textarea{width:100%;font-size:16px;padding:10px;border:1.5px solid var(--line);border-radius:8px;font-family:inherit;background:#fff}
+  .sub{margin-top:6px}
+  .sub span{font-size:12px;color:var(--gray)}
+  .btn{display:block;width:100%;border:none;border-radius:10px;padding:13px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:10px}
+  .btn-main{background:var(--red);color:#fff}
+  .btn-sub{background:#fff;color:var(--blue);border:2px solid var(--blue)}
+  .row{display:flex;gap:8px}.row .btn{flex:1}
+  textarea{font-family:Menlo,Consolas,monospace;font-size:12px;min-height:180px}
+  .ok{color:var(--green);font-size:14px;font-weight:700;margin-top:6px}
+  .steps{font-size:14px;padding-left:20px}
+  .steps li{margin-bottom:4px}
+</style>
+</head>
+<body>
+<header><h1>管理者画面：選手の答えを入れる</h1></header>
+<main>
+  <div class="card">
+    <h2>使い方</h2>
+    <ol class="steps">
+      <li>選手を選んで、アンケートの答えを入れる（入れた内容はこの端末に自動で下書き保存）</li>
+      <li>全員分が終わったら（途中でもOK）、いちばん下の「answers.json を作る」を押す</li>
+      <li>出てきた中身をコピーして、GitHubの <b>answers.json</b> に上書きして保存</li>
+    </ol>
+    <p class="muted">この画面で入れただけではクイズに反映されません。GitHubの answers.json を上書きすると、数分でクイズに反映されます。</p>
+    <p class="muted" id="loadMsg"></p>
+  </div>
+
+  <div class="card">
+    <h2>① 選手を選ぶ</h2>
+    <div class="players" id="players"></div>
+  </div>
+
+  <div class="card" id="form"></div>
+
+  <div class="card">
+    <h2>③ answers.json を作る</h2>
+    <button class="btn btn-main" id="make">answers.json を作る</button>
+    <div id="out" style="display:none">
+      <textarea id="json" readonly></textarea>
+      <div class="row">
+        <button class="btn btn-sub" id="copy">中身をコピー</button>
+        <button class="btn btn-sub" id="dl">ファイルで保存</button>
+      </div>
+      <div class="ok" id="copied"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>別の端末の内容を読み込む（必要なときだけ）</h2>
+    <p class="muted">answers.json の中身を貼り付けて「読み込む」を押すと、その内容で上書きします。</p>
+    <textarea id="importText" style="min-height:90px"></textarea>
+    <button class="btn btn-sub" id="import">読み込む</button>
+    <div class="ok" id="importMsg"></div>
+  </div>
+</main>
+
+<script>
+const PLAYERS = [
+  "西田 有志","中村 駿介","富田 将馬","アントワーヌ・ブリザール","仲本 賢優",
+  "山内 晶大","山本 智大","甲斐 優斗","伊賀 亮平","西山 大翔",
+  "西川 馨太郎","ブライアン・バグナス","エバデダン・ラリー","フィニアン・マッカーシー","ミゲル・ロペス"
+];
+const QUESTIONS = [
+  {id:"q1", type:"choice", text:"①災害時に1つだけ持って逃げるなら何を選ぶ？", options:["水","スマートフォン","懐中電灯","バレーボール","その他"]},
+  {id:"q2", type:"player", text:"②次の防火・防災アンバサダーの隊長は絶対この人だ！"},
+  {id:"q3", type:"choice", text:"③消防士に任せるなら、どのポジションが向いてそう？", options:["セッター","リベロ","ミドルブロッカー","アウトサイドヒッター"]},
+  {id:"q4", type:"player", text:"④一番消防の制帽が似合ってるのは誰？"},
+  {id:"q5", type:"player", text:"⑤過酷な訓練でぶっちぎり一位になりそうなレスキューマンは誰？"},
+  {id:"q6", type:"player", text:"⑥エマージェンシーコールで駆けつけてくれそうな選手は誰？"},
+  {id:"q7", type:"kanji", text:"⑦消防のイメージを漢字一文字（1単語）で"}
+];
+const KEY = "bq_admin_draft";
+let DATA = {players:{}};
+let current = PLAYERS[0];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+function saveDraft(){ try{ localStorage.setItem(KEY, JSON.stringify(DATA)); }catch(e){} }
+function loadDraft(){ try{ const s = localStorage.getItem(KEY); return s ? JSON.parse(s) : null; }catch(e){ return null; } }
+
+function status(name){
+  const a = DATA.players[name] || {};
+  const n = QUESTIONS.filter(q => a[q.id] && String(a[q.id]).trim()).length;
+  return n === QUESTIONS.length ? ["done","入力済み"] : n ? ["part",`${n}/${QUESTIONS.length}問`] : ["none","未入力"];
+}
+
+function renderPlayers(){
+  document.getElementById("players").innerHTML = PLAYERS.map((p,i) => {
+    const [cls, txt] = status(p);
+    return `<button class="pbtn ${p===current?"sel":""}" data-i="${i}">${esc(p)}<span class="st ${cls}">${txt}</span></button>`;
+  }).join("");
+  document.querySelectorAll(".pbtn").forEach(b => b.onclick = () => { current = PLAYERS[+b.dataset.i]; renderPlayers(); renderForm(); });
+}
+
+function sel(id, opts, val){
+  return `<select data-k="${id}"><option value="">（未入力）</option>${opts.map(o =>
+    `<option ${o===val?"selected":""}>${esc(o)}</option>`).join("")}</select>`;
+}
+
+function renderForm(){
+  const a = DATA.players[current] || {};
+  let html = `<h2>② ${esc(current)} 選手の答え</h2>`;
+  QUESTIONS.forEach(q => {
+    html += `<div class="q"><label>${esc(q.text)}</label>`;
+    if (q.type === "choice") html += sel(q.id, q.options, a[q.id]);
+    if (q.type === "player") html += sel(q.id, PLAYERS, a[q.id]);
+    if (q.type === "kanji") html += `<input type="text" data-k="q7" value="${esc(a.q7)}" placeholder="例：守">
+      <div class="sub"><span>正解にしたい答えが複数あるときは「、」で区切る（例：守、Protect）。英語は大文字・小文字を区別しません。</span></div>`;
+    if (q.id === "q1") html += `<div class="sub"><span>「その他」の中身（その他を選んだ選手だけ）</span>
+      <input type="text" data-k="q1_other" value="${esc(a.q1_other)}"></div>`;
+    if (q.id === "q2") html += `<div class="sub"><span>理由（日本語）※答え合わせの画面に出ます</span>
+      <input type="text" data-k="q2_reason" value="${esc(a.q2_reason)}"></div>
+      <div class="sub"><span>理由（英語・なくてもOK）</span>
+      <input type="text" data-k="q2_reason_en" value="${esc(a.q2_reason_en)}"></div>`;
+    html += `</div>`;
+  });
+  document.getElementById("form").innerHTML = html;
+  document.querySelectorAll("#form [data-k]").forEach(el => {
+    const ev = el.tagName === "SELECT" ? "change" : "input";
+    el.addEventListener(ev, () => {
+      const a = DATA.players[current] = DATA.players[current] || {};
+      const v = el.value.trim();
+      if (v) a[el.dataset.k] = v; else delete a[el.dataset.k];
+      if (!Object.keys(a).length) delete DATA.players[current];
+      saveDraft(); renderPlayers();
+    });
+  });
+}
+
+function buildJson(){
+  const out = {updated: new Date().toISOString(), players:{}};
+  PLAYERS.forEach(p => { if (DATA.players[p]) out.players[p] = DATA.players[p]; });
+  return JSON.stringify(out, null, 2);
+}
+
+document.getElementById("make").onclick = () => {
+  document.getElementById("json").value = buildJson();
+  document.getElementById("out").style.display = "block";
+  document.getElementById("copied").textContent = "";
+};
+document.getElementById("copy").onclick = async () => {
+  const ta = document.getElementById("json");
+  try{ await navigator.clipboard.writeText(ta.value); }
+  catch(e){ ta.select(); document.execCommand("copy"); }
+  document.getElementById("copied").textContent = "コピーしました。GitHubの answers.json に貼り付けて保存してください。";
+};
+document.getElementById("dl").onclick = () => {
+  const blob = new Blob([document.getElementById("json").value], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "answers.json"; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+};
+document.getElementById("import").onclick = () => {
+  const msg = document.getElementById("importMsg");
+  try{
+    const d = JSON.parse(document.getElementById("importText").value);
+    if (!d.players) throw 0;
+    DATA = {players: d.players}; saveDraft(); renderPlayers(); renderForm();
+    msg.style.color = ""; msg.textContent = "読み込みました。";
+  }catch(e){ msg.style.color = "var(--red)"; msg.textContent = "読み込めませんでした。answers.json の中身を丸ごと貼ってください。"; }
+};
+
+/* 起動：この端末の下書き → なければ公開中の answers.json */
+(function init(){
+  const lm = document.getElementById("loadMsg");
+  const draft = loadDraft();
+  if (draft && draft.players && Object.keys(draft.players).length){
+    DATA = draft; lm.textContent = "この端末の下書きを開きました。";
+    renderPlayers(); renderForm(); return;
+  }
+  fetch("answers.json?t=" + Date.now()).then(r => r.ok ? r.json() : null).then(d => {
+    if (d && d.players){ DATA = {players: d.players}; lm.textContent = "公開中の answers.json を読み込みました。"; }
+  }).catch(()=>{}).finally(() => { renderPlayers(); renderForm(); });
+})();
+</script>
+</body>
+</html>
