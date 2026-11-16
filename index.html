@@ -71,23 +71,22 @@
   #splash{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;
     padding:24px;transition:opacity .5s ease;overflow:hidden;
     background:linear-gradient(105deg,#0b2a66 0%,#1446a0 49.8%,#c81e1e 50.2%,#e03131 100%)}
-  #splash .logos{display:flex;align-items:center;justify-content:center;gap:3vw;width:100%;max-width:640px}
-  #splash .logo{width:38vw;max-width:240px;aspect-ratio:1;display:flex;align-items:center;justify-content:center}
-  #splash .logo img{width:100%;height:100%;object-fit:contain;
-    filter:drop-shadow(0 0 2px rgba(255,255,255,.9)) drop-shadow(0 8px 18px rgba(0,0,0,.35))}
-  #splash .logo.l{animation:fromLeft .8s cubic-bezier(.2,.8,.2,1) both}
-  #splash .logo.r{animation:fromRight .8s cubic-bezier(.2,.8,.2,1) both}
-  #splash .x{font-size:min(11vw,56px);color:#fff;font-weight:700;line-height:1;text-shadow:0 2px 8px rgba(0,0,0,.3);
+  #splash .title{display:flex;flex-direction:column;align-items:center;text-align:center;color:#fff;
+    text-shadow:0 3px 0 rgba(0,0,0,.25),0 6px 18px rgba(0,0,0,.35)}
+  #splash .title .tl,#splash .title .tr{font-size:min(9.5vw,56px);font-weight:900;letter-spacing:.04em;white-space:nowrap;line-height:1.25}
+  #splash .title .tl{animation:fromLeft .8s cubic-bezier(.2,.8,.2,1) both}
+  #splash .title .tr{animation:fromRight .8s cubic-bezier(.2,.8,.2,1) both}
+  #splash .x{font-size:min(9vw,48px);margin:.1em 0;color:#fff;font-weight:700;line-height:1;text-shadow:0 2px 8px rgba(0,0,0,.3);
     animation:pop .5s .75s cubic-bezier(.3,1.6,.5,1) both}
-  #splash .names{margin-top:30px;text-align:center;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.35);animation:fadeIn .8s .8s ease both}
+  #splash .names{margin-top:26px;text-align:center;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.35);animation:fadeIn .8s .8s ease both}
   #splash .names .n{font-size:min(4.3vw,26px);font-weight:800;letter-spacing:.02em;white-space:nowrap}
   #splash .names .n span{margin:0 .5em;font-weight:400}
-  #splash .names .c{display:inline-block;font-size:min(4.2vw,20px);font-weight:800;margin-top:10px;letter-spacing:.3em;
+  #splash .names .c{display:inline-block;font-size:min(5vw,24px);font-weight:800;margin-top:10px;letter-spacing:.3em;
     padding:4px 14px 4px 18px;border:2px solid #fff;border-radius:999px}
   #splash.hide{opacity:0;pointer-events:none}
   #splash .stage1{display:flex;flex-direction:column;align-items:center;position:relative;z-index:1}
-  #splash .stage1 .logos,#splash .stage1 .names{transition:transform .5s cubic-bezier(.3,1.5,.5,1) .12s}
-  #splash.s1out .stage1 .logos{transform:translateY(var(--ly,-31vh)) scale(var(--ls,.72))}
+  #splash .stage1 .title,#splash .stage1 .names{transition:transform .5s cubic-bezier(.3,1.5,.5,1) .12s}
+  #splash.s1out .stage1 .title{transform:translateY(var(--ly,-31vh)) scale(var(--ls,.72))}
   #splash.s1out .stage1 .names{transform:translateY(var(--ny,30vh))}
   /* バレーボール */
   #splash .ballwrap{position:absolute;left:50%;top:50%;width:min(95vmin,620px);height:min(95vmin,620px);
@@ -146,13 +145,12 @@
 <body>
 <div id="splash">
   <div class="stage1">
-    <div class="logos">
-      <div class="logo l"><img src="logo-bluteon.png" alt="大阪ブルテオン"></div>
+    <div class="title">
+      <div class="tl">大阪ブルテオン</div>
       <div class="x">×</div>
-      <div class="logo r"><img src="logo-fire.png" alt="枚方寝屋川消防組合"></div>
+      <div class="tr">枚方寝屋川消防組合</div>
     </div>
     <div class="names">
-      <div class="n">大阪ブルテオン<span>×</span>枚方寝屋川消防組合</div>
       <div class="c">コラボ企画</div>
     </div>
   </div>
@@ -517,16 +515,9 @@ function showCheckConfirm(){
   document.getElementById("chkYes").onclick = () => { state.checkedAt = Date.now(); savePlay(true); showResult(); };
 }
 
-/* ===== 起動時の演出：ロゴ → スパイク → クイズにチャレンジ！！ ===== */
+/* ===== 起動時の演出：タイトル → スパイク → クイズにチャレンジ！！ ===== */
 (function(){
   const sp = document.getElementById("splash");
-  const imgs = sp.querySelectorAll(".logos img");
-  let missing = 0;
-  imgs.forEach(img => img.onerror = () => {
-    img.parentNode.remove(); missing++;
-    if (missing === imgs.length) sp.querySelector(".logos").remove();
-    else { const x = sp.querySelector(".x"); if (x) x.remove(); }
-  });
   const TXT = {
     ja:{ct:"クイズに<br>チャレンジ！！", tap:"タップしてスタート"},
     en:{ct:"Take the<br>Quiz Challenge!!", tap:"Tap to start"}
@@ -541,12 +532,12 @@ function showCheckConfirm(){
     later(toImpact, 620);
   }
   function placeEdges(){
-    // ロゴは画面の上へ、文字は画面の下へ（画面の大きさに合わせて計算）
+    // タイトルは画面の上へ、「コラボ企画」は画面の下へ（画面の大きさに合わせて計算）
     const H = window.innerHeight, m = Math.max(14, H*0.04);
-    const lg = sp.querySelector(".logos"), nm = sp.querySelector(".names");
+    const lg = sp.querySelector(".title"), nm = sp.querySelector(".names");
     if (lg){
       const r = lg.getBoundingClientRect();
-      const sc = Math.min(0.72, (H*0.24)/r.height);
+      const sc = Math.min(0.75, (H*0.24)/r.height);
       sp.style.setProperty("--ls", sc);
       sp.style.setProperty("--ly", (m + r.height*sc/2 - (r.top + r.height/2)) + "px");
     }
