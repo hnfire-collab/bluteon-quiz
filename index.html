@@ -274,7 +274,7 @@ function showTop(){
       <div class="grid">
         ${PLAYERS.map((p,i) => `
           <button class="opt" data-i="${i}" ${isReady(p.ja) ? "" : "disabled"}>
-            ${esc(p[lang]).replace(/・/g,"・<wbr>")}${isReady(p.ja) ? "" : `<small>${t().preparing}</small>`}
+            ${esc(p[lang]).replace(/・/g,"・<wbr>")}${lang==="ja" ? "<wbr> 選手" : ""}${isReady(p.ja) ? "" : `<small>${t().preparing}</small>`}
           </button>`).join("")}
       </div>
     </div>`;
