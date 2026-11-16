@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>大阪ブルテオン×枚方寝屋川消防組合 選手アンケートクイズ</title>
+<style>
+  :root{
+    --blue:#1446a0; --blue-dark:#0b2a66; --blue-light:#e8f0ff;
+    --red:#d62828; --green:#1a9e5c; --gray:#6b7280; --line:#d6deec;
+    --bg:#f4f7fc; --white:#fff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif;
+    background:var(--bg);color:#1f2937;line-height:1.6;min-height:100vh;-webkit-text-size-adjust:100%}
+  header{background:linear-gradient(135deg,var(--blue-dark),var(--blue));color:#fff;padding:12px 16px 14px;text-align:center;position:relative}
+  header .sub{font-size:12px;opacity:.85;letter-spacing:.03em}
+  header h1{font-size:18px;font-weight:800;margin-top:2px}
+  .lang{display:inline-flex;margin-top:8px;background:rgba(255,255,255,.18);border-radius:999px;padding:3px}
+  .lang button{border:none;background:none;color:#fff;font-family:inherit;font-size:13px;font-weight:700;
+    padding:4px 14px;border-radius:999px;cursor:pointer}
+  .lang button.on{background:#fff;color:var(--blue-dark)}
+  main{max-width:560px;margin:0 auto;padding:18px 16px 40px}
+  .card{background:var(--white);border-radius:16px;padding:20px 18px;box-shadow:0 2px 10px rgba(11,42,102,.08);margin-bottom:16px}
+  .lead{font-size:15px}
+  .lead strong{color:var(--blue)}
+  h2{font-size:18px;color:var(--blue-dark);margin-bottom:10px}
+  .btn{display:block;width:100%;border:none;border-radius:12px;padding:15px;font-size:17px;font-weight:700;
+    cursor:pointer;font-family:inherit;transition:transform .05s}
+  .btn:active{transform:scale(.98)}
+  .btn-main{background:var(--red);color:#fff}
+  .btn-main:disabled{background:#c9ced8;cursor:default}
+  .btn-sub{background:var(--white);color:var(--blue);border:2px solid var(--blue)}
+  .btn-row{display:flex;gap:10px;margin-top:16px}
+  .btn-row .btn{flex:1}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .opt{border:2px solid var(--line);background:#fff;border-radius:12px;padding:13px 10px;font-size:15px;
+    font-weight:600;cursor:pointer;text-align:center;font-family:inherit;color:#1f2937;line-height:1.35}
+  .opt.sel{border-color:var(--blue);background:var(--blue-light);color:var(--blue-dark)}
+  .opt:disabled{opacity:.4;cursor:default}
+  .opt small{display:block;font-size:11px;font-weight:400;color:var(--gray)}
+  .list{display:flex;flex-direction:column;gap:10px}
+  .list .opt{text-align:left;padding:14px 16px;font-size:16px}
+  .progress{display:flex;gap:5px;margin-bottom:14px}
+  .progress span{flex:1;height:6px;border-radius:3px;background:var(--line)}
+  .progress span.done{background:var(--blue)}
+  .qno{font-size:13px;color:var(--blue);font-weight:700}
+  .qtext{font-size:19px;font-weight:800;margin:4px 0 6px;line-height:1.5}
+  .qhint{font-size:13px;color:var(--gray);margin-bottom:14px}
+  .player-tag{display:inline-block;background:var(--blue-dark);color:#fff;border-radius:999px;padding:3px 12px;font-size:13px;margin-bottom:10px}
+  input[type=text]{width:100%;font-size:26px;text-align:center;padding:14px;border:2px solid var(--line);border-radius:12px;font-family:inherit}
+  input[type=text]:focus{outline:none;border-color:var(--blue)}
+  .score{text-align:center;padding:10px 0 4px}
+  .score .big{font-size:56px;font-weight:900;color:var(--red);line-height:1.1}
+  .score .big small{font-size:20px;color:#1f2937}
+  .score .msg{font-size:16px;font-weight:700;margin-top:6px}
+  .res{border-top:1px solid var(--line);padding:12px 0}
+  .res:first-child{border-top:none}
+  .res .head{display:flex;gap:10px;align-items:flex-start}
+  .mark{flex:none;width:30px;height:30px;border-radius:50%;color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center;font-size:16px}
+  .mark.ok{background:var(--green)} .mark.ng{background:var(--red)}
+  .res .q{font-size:14px;font-weight:700}
+  .res .a{font-size:13px;color:var(--gray);margin-top:3px}
+  .res .a b{color:#1f2937}
+  .res .note{font-size:13px;background:var(--blue-light);border-radius:8px;padding:6px 10px;margin-top:6px}
+  .center{text-align:center}
+  .muted{color:var(--gray);font-size:13px}
+  .err{color:var(--red);font-size:14px}
+  footer{text-align:center;font-size:11px;color:var(--gray);padding:10px 0 24px}
+</style>
+</head>
+<body>
+<header>
+  <div class="sub" id="hSub"></div>
+  <h1 id="hTitle"></h1>
+  <div class="lang"><button data-l="ja">日本語</button><button data-l="en">English</button></div>
+</header>
+<main id="app"><div class="card center muted">読み込み中… / Loading…</div></main>
+<footer id="foot"></footer>
+
+<script>
+/* ===== 選手（日本語名がデータの名前。en は英語表示用） ===== */
+const PLAYERS = [
+  {ja:"西田 有志", en:"Yuji Nishida"},
+  {ja:"中村 駿介", en:"Shunsuke Nakamura"},
+  {ja:"富田 将馬", en:"Shoma Tomita"},
+  {ja:"アントワーヌ・ブリザール", en:"Antoine Brizard"},
+  {ja:"仲本 賢優", en:"Kenyu Nakamoto"},
+  {ja:"山内 晶大", en:"Akihiro Yamauchi"},
+  {ja:"山本 智大", en:"Tomohiro Yamamoto"},
+  {ja:"甲斐 優斗", en:"Yuto Kai"},
+  {ja:"伊賀 亮平", en:"Ryohei Iga"},
+  {ja:"西山 大翔", en:"Hiroto Nishiyama"},
+  {ja:"西川 馨太郎", en:"Keitaro Nishikawa"},
+  {ja:"ブライアン・バグナス", en:"Bryan Bagunas"},
+  {ja:"エバデダン・ラリー", en:"Larry Evbade-Dan"},
+  {ja:"フィニアン・マッカーシー", en:"Fynnian McCarthy"},
+  {ja:"ミゲル・ロペス", en:"Miguel López"}
+];
+
+/* ===== 問題（選択肢は日本語がデータの値。en は英語表示用） ===== */
+const QUESTIONS = [
+  {id:"q1", type:"choice",
+   ja:"災害時に1つだけ持って逃げるなら何を選ぶ？",
+   en:"If you could take only ONE thing with you in an emergency, what would you choose?",
+   options:[{ja:"水",en:"Water"},{ja:"スマートフォン",en:"Smartphone"},{ja:"懐中電灯",en:"Flashlight"},
+            {ja:"バレーボール",en:"Volleyball"},{ja:"その他",en:"Other"}]},
+  {id:"q2", type:"player",
+   ja:"次の防火・防災アンバサダーの隊長は絶対この人だ！",
+   en:"This person has GOT to be the next captain of the Fire Prevention and Disaster Preparedness Ambassador!"},
+  {id:"q3", type:"choice",
+   ja:"消防士にバレーボールのポジションを任せるなら、どのポジションが向いてそう？",
+   en:"If you could assign a firefighter to a volleyball position, which position do you think would suit them best?",
+   options:[{ja:"セッター",en:"Setter"},{ja:"リベロ",en:"Libero"},
+            {ja:"ミドルブロッカー",en:"Middle Blocker"},{ja:"アウトサイドヒッター",en:"Outside Hitter"}]},
+  {id:"q4", type:"player",
+   ja:"一番消防の制帽が似合ってるのは誰？",
+   en:"Who looks the best wearing a firefighter's cap?"},
+  {id:"q5", type:"player",
+   ja:"消防士の過酷な訓練をやらせたらぶっちぎりで一位になりそうなレスキューマンは誰？",
+   en:"Who do you think would come out on top by a landslide if the players took on the firefighters' hard training?"},
+  {id:"q6", type:"player",
+   ja:"いつでも電話（エマージェンシーコール）したら駆けつけてきてくれそうな選手は誰？",
+   en:"Which player do you think would rush to rescue anytime you made an emergency call?"},
+  {id:"q7", type:"kanji",
+   ja:"消防のイメージを漢字一文字（1単語）でお願いします！",
+   en:"Describe your image of firefighters in just ONE word!"}
+];
+
+/* ===== 画面の文言 ===== */
+const T = {
+  ja:{
+    sub:"大阪ブルテオン × 枚方寝屋川消防組合", title:"選手アンケート 答え当てクイズ",
+    foot:"大阪ブルテオン × 枚方寝屋川消防組合 コラボ企画",
+    introH:"選手の答えを当てよう！",
+    intro:n=>`大阪ブルテオンの選手が答えた<strong>防災アンケート</strong>。<br>選手を1人選んで、その選手がどう答えたかを予想してね。全${n}問です。`,
+    chooseH:"どの選手の答えを当てる？", preparing:"準備中", allPreparing:"ただいま準備中です。もう少し待ってね。",
+    sama:" 選手", answerOf:p=>`${p} 選手の答えは？`, qno:(i,n)=>`第${i}問 / 全${n}問`,
+    hintChoice:"選手が選んだと思うものをタップ", hintKanji:"漢字1文字（または1単語）を入れてね", placeholder:"例：守",
+    back:"戻る", toTop:"選手選びへ", next:"次へ", check:"答え合わせ！",
+    correctOf:(ok,n)=>`<small> / ${n}問 正解</small>`, review:"答え合わせ",
+    qlabel:i=>`第${i}問`, theirs:"選手の答え", yours:"あなた", reason:"理由",
+    msgs:["全問正解！ 完璧なファンです！","すごい！ かなりの理解者！","なかなか！ ほかの選手でも挑戦してみよう","残念！ もう一度チャレンジ！"],
+    again:"ほかの選手で挑戦する", retry:"同じ選手でもう一度",
+    loadErr:"答えのデータを読み込めませんでした。", loadErr2:"時間をおいて、もう一度ひらいてください。"
+  },
+  en:{
+    sub:"OSAKA BLUTEON × Hirakata Neyagawa Fire Department Joint Collaboration Survey", title:"Guess the Player's Answers!",
+    foot:"OSAKA BLUTEON × Hirakata Neyagawa Fire Department Collaboration",
+    introH:"Can you guess their answers?",
+    intro:n=>`Osaka Bluteon players answered a <strong>disaster preparedness survey</strong>.<br>Pick a player and guess how they answered. ${n} questions in total.`,
+    chooseH:"Choose a player", preparing:"Coming soon", allPreparing:"Coming soon. Please check back later!",
+    sama:"", answerOf:p=>`How did ${p} answer?`, qno:(i,n)=>`Question ${i} of ${n}`,
+    hintChoice:"Tap what you think the player chose", hintKanji:"Type one word", placeholder:"e.g. Hero",
+    back:"Back", toTop:"Players", next:"Next", check:"See results!",
+    correctOf:(ok,n)=>`<small> / ${n} correct</small>`, review:"Answers",
+    qlabel:i=>`Q${i}`, theirs:"Player", yours:"You", reason:"Reason",
+    msgs:["Perfect score! A true fan!","Amazing! You really know them!","Nice! Try another player too","So close! Try again!"],
+    again:"Try another player", retry:"Try the same player again",
+    loadErr:"Couldn't load the answer data.", loadErr2:"Please try again a little later."
+  }
+};
+
+/* ===== 状態 ===== */
+let lang = "ja";
+try{ const s = localStorage.getItem("bq_lang"); if (s==="en"||s==="ja") lang = s; }catch(e){}
+if (new URLSearchParams(location.search).get("lang")==="en") lang = "en";
+let DATA = {players:{}};
+let loaded = false, loadFailed = false;
+let state = {screen:"top", player:null, step:0, answers:{}};
+const app = document.getElementById("app");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const norm = s => String(s ?? "").replace(/[\s　]/g, "").toLowerCase();
+const t = () => T[lang];
+const pName = ja => { const p = PLAYERS.find(x => x.ja === ja); return p ? p[lang] : ja; };
+const optLabel = (q, ja) => { const o = (q.options||[]).find(x => x.ja === ja); return o ? o[lang] : ja; };
+const valLabel = (q, v) => q.type==="player" ? pName(v) : q.type==="choice" ? optLabel(q, v) : v;
+
+function isReady(name){
+  const a = DATA.players[name];
+  return a && QUESTIONS.every(q => a[q.id] && String(a[q.id]).trim() !== "");
+}
+
+function setLang(l){
+  lang = l;
+  try{ localStorage.setItem("bq_lang", l); }catch(e){}
+  document.documentElement.lang = l;
+  document.querySelectorAll(".lang button").forEach(b => b.classList.toggle("on", b.dataset.l === l));
+  document.getElementById("hSub").textContent = t().sub;
+  document.getElementById("hTitle").textContent = t().title;
+  document.getElementById("foot").textContent = t().foot;
+  render();
+}
+document.querySelectorAll(".lang button").forEach(b => b.onclick = () => setLang(b.dataset.l));
+
+function render(){
+  if (loadFailed){
+    app.innerHTML = `<div class="card center"><p class="err">${t().loadErr}</p><p class="muted">${t().loadErr2}</p></div>`;
+    return;
+  }
+  if (!loaded) return;
+  if (state.screen==="q") showQuestion();
+  else if (state.screen==="result") showResult();
+  else showTop();
+}
+
+/* ===== 画面：スタート ===== */
+function showTop(){
+  state.screen = "top";
+  const readyCount = PLAYERS.filter(p => isReady(p.ja)).length;
+  app.innerHTML = `
+    <div class="card">
+      <h2>${t().introH}</h2>
+      <p class="lead">${t().intro(QUESTIONS.length)}</p>
+    </div>
+    <div class="card">
+      <h2>${t().chooseH}</h2>
+      ${readyCount === 0 ? `<p class="muted">${t().allPreparing}</p>` : ""}
+      <div class="list">
+        ${PLAYERS.map((p,i) => `
+          <button class="opt" data-i="${i}" ${isReady(p.ja) ? "" : "disabled"}>
+            ${esc(p[lang])}${t().sama}${isReady(p.ja) ? "" : `<small>${t().preparing}</small>`}
+          </button>`).join("")}
+      </div>
+    </div>`;
+  app.querySelectorAll(".opt[data-i]").forEach(b => b.onclick = () => {
+    state = {screen:"q", player: PLAYERS[+b.dataset.i].ja, step:0, answers:{}};
+    showQuestion();
+  });
+  window.scrollTo(0,0);
+}
+
+/* ===== 画面：問題 ===== */
+function showQuestion(){
+  state.screen = "q";
+  const q = QUESTIONS[state.step];
+  const cur = state.answers[q.id] ?? "";
+  let body = "";
+  if (q.type === "choice"){
+    body = `<div class="list">${q.options.map(o =>
+      `<button class="opt ${cur===o.ja?"sel":""}" data-v="${esc(o.ja)}">${esc(o[lang])}</button>`).join("")}</div>`;
+  } else if (q.type === "player"){
+    body = `<div class="grid">${PLAYERS.map(p =>
+      `<button class="opt ${cur===p.ja?"sel":""}" data-v="${esc(p.ja)}">${esc(p[lang])}</button>`).join("")}</div>`;
+  } else {
+    body = `<input type="text" id="kanji" maxlength="20" placeholder="${esc(t().placeholder)}" value="${esc(cur)}" autocomplete="off">`;
+  }
+  const last = state.step === QUESTIONS.length - 1;
+  app.innerHTML = `
+    <div class="card">
+      <div class="progress">${QUESTIONS.map((_,i)=>`<span class="${i<=state.step?"done":""}"></span>`).join("")}</div>
+      <span class="player-tag">${esc(t().answerOf(pName(state.player)))}</span>
+      <div class="qno">${t().qno(state.step+1, QUESTIONS.length)}</div>
+      <div class="qtext">${esc(q[lang])}</div>
+      <div class="qhint">${q.type==="kanji" ? t().hintKanji : t().hintChoice}</div>
+      ${body}
+      <div class="btn-row">
+        <button class="btn btn-sub" id="back">${state.step===0 ? t().toTop : t().back}</button>
+        <button class="btn btn-main" id="next" ${cur ? "" : "disabled"}>${last ? t().check : t().next}</button>
+      </div>
+    </div>`;
+  const next = document.getElementById("next");
+  app.querySelectorAll(".opt[data-v]").forEach(b => b.onclick = () => {
+    state.answers[q.id] = b.dataset.v;
+    app.querySelectorAll(".opt[data-v]").forEach(x => x.classList.toggle("sel", x === b));
+    next.disabled = false;
+  });
+  const k = document.getElementById("kanji");
+  if (k){ k.oninput = () => { state.answers[q.id] = k.value.trim(); next.disabled = !k.value.trim(); }; }
+  document.getElementById("back").onclick = () => {
+    if (state.step === 0) showTop(); else { state.step--; showQuestion(); }
+  };
+  next.onclick = () => { if (last) showResult(); else { state.step++; showQuestion(); } };
+  window.scrollTo(0,0);
+}
+
+/* ===== 判定 ===== */
+const splitAns = s => String(s ?? "").split(/[、,，\/／]/).map(x => x.trim()).filter(Boolean);
+function isCorrect(q, mine, correct){
+  if (q.type === "kanji") return splitAns(correct).map(norm).includes(norm(mine));
+  return norm(mine) === norm(correct);
+}
+
+/* ===== 画面：結果 ===== */
+function showResult(){
+  state.screen = "result";
+  const a = DATA.players[state.player];
+  let ok = 0;
+  const rows = QUESTIONS.map((q,i) => {
+    const mine = state.answers[q.id];
+    const correct = a[q.id];
+    const hit = isCorrect(q, mine, correct);
+    if (hit) ok++;
+    let shown = q.type==="kanji" ? splitAns(correct).join(" / ") : valLabel(q, correct);
+    if (q.id==="q1" && correct==="その他" && a.q1_other) shown += `（${a.q1_other}）`;
+    let note = "";
+    const reason = lang==="en" ? (a.q2_reason_en || a.q2_reason) : a.q2_reason;
+    if (q.id==="q2" && reason) note = `<div class="note">${t().reason}：${esc(reason)}</div>`;
+    return `<div class="res"><div class="head">
+      <div class="mark ${hit?"ok":"ng"}">${hit?"○":"×"}</div>
+      <div><div class="q">${t().qlabel(i+1)}　${esc(q[lang])}</div>
+      <div class="a">${t().theirs}：<b>${esc(shown)}</b>　／　${t().yours}：${esc(valLabel(q, mine))}</div>${note}</div>
+    </div></div>`;
+  }).join("");
+  const n = QUESTIONS.length;
+  const m = t().msgs;
+  const msg = ok===n ? m[0] : ok>=n-2 ? m[1] : ok>=3 ? m[2] : m[3];
+  app.innerHTML = `
+    <div class="card">
+      <span class="player-tag">${esc(pName(state.player))}${t().sama}</span>
+      <div class="score">
+        <div class="big">${ok}${t().correctOf(ok,n)}</div>
+        <div class="msg">${msg}</div>
+      </div>
+    </div>
+    <div class="card"><h2>${t().review}</h2>${rows}</div>
+    <button class="btn btn-main" id="again">${t().again}</button>
+    <div style="height:10px"></div>
+    <button class="btn btn-sub" id="retry">${t().retry}</button>`;
+  document.getElementById("again").onclick = showTop;
+  document.getElementById("retry").onclick = () => { state = {screen:"q", player:state.player, step:0, answers:{}}; showQuestion(); };
+  window.scrollTo(0,0);
+}
+
+/* ===== 読み込み ===== */
+setLang(lang);
+fetch("answers.json?t=" + Date.now())
+  .then(r => { if(!r.ok) throw new Error(r.status); return r.json(); })
+  .then(d => { DATA = d && d.players ? d : {players:{}}; loaded = true; render(); })
+  .catch(() => { loadFailed = true; render(); });
+</script>
+</body>
+</html>
