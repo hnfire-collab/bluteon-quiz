@@ -167,15 +167,18 @@ const T = {
     sub:"大阪ブルテオン × 枚方寝屋川消防組合", title:"選手アンケート 答え当てクイズ",
     foot:"大阪ブルテオン × 枚方寝屋川消防組合 コラボ企画",
     introH:"選手の答えを当てよう！",
-    intro:n=>`大阪ブルテオンの選手が答えた<strong>防災アンケート</strong>。<br>選手を1人選んで、その選手がどう答えたかを予想してね。全${n}問です。`,
+    intro:n=>`大阪ブルテオンの選手が答えた<strong>防災アンケート</strong>。<br>選手を1人選んで、その選手がどう答えたかを予想してね。全${n}問です。<br><strong>挑戦できるのは1回・1人の選手だけ</strong>です。`,
     chooseH:"どの選手の答えを当てる？", preparing:"準備中", allPreparing:"ただいま準備中です。もう少し待ってね。",
     sama:" 選手", answerOf:p=>`${p} 選手の答えは？`, qno:(i,n)=>`第${i}問 / 全${n}問`,
     hintChoice:"選手が選んだと思うものをタップ", hintKanji:"漢字1文字（または1単語）を入れてね", placeholder:"例：守",
     back:"戻る", toTop:"選手選びへ", next:"次へ", check:"答え合わせ！",
     correctOf:(ok,n)=>`<small> / ${n}問 正解</small>`, review:"答え合わせ",
     qlabel:i=>`第${i}問`, theirs:"選手の答え", yours:"あなた", reason:"理由",
-    msgs:["全問正解！ 完璧なファンです！","すごい！ かなりの理解者！","なかなか！ ほかの選手でも挑戦してみよう","残念！ もう一度チャレンジ！"],
-    again:"ほかの選手で挑戦する", retry:"同じ選手でもう一度",
+    msgs:["全問正解！ 完璧なファンです！","すごい！ かなりの理解者！","なかなか！ いい線いってます！","残念！ でも参加ありがとう！"],
+    confirmH:p=>`${p} 選手で挑戦する？`,
+    confirmTxt:"回答できるのは<strong>1回だけ</strong>です。<br>選手を決めたら、あとから変えられません。",
+    confirmOk:"挑戦する！", confirmBack:"選びなおす",
+    doneNote:"回答は1回だけです。参加ありがとうございました！",
     testbar:"⚠ テスト中：いま入っている答えは仮のものです（本人の答えではありません）",
     loadErr:"答えのデータを読み込めませんでした。", loadErr2:"時間をおいて、もう一度ひらいてください。"
   },
@@ -183,15 +186,18 @@ const T = {
     sub:"OSAKA BLUTEON × Hirakata Neyagawa Fire Department Joint Collaboration Survey", title:"Guess the Player's Answers!",
     foot:"OSAKA BLUTEON × Hirakata Neyagawa Fire Department Collaboration",
     introH:"Can you guess their answers?",
-    intro:n=>`Osaka Bluteon players answered a <strong>disaster preparedness survey</strong>.<br>Pick a player and guess how they answered. ${n} questions in total.`,
+    intro:n=>`Osaka Bluteon players answered a <strong>disaster preparedness survey</strong>.<br>Pick a player and guess how they answered. ${n} questions in total.<br><strong>You can play only once, with one player.</strong>`,
     chooseH:"Choose a player", preparing:"Coming soon", allPreparing:"Coming soon. Please check back later!",
     sama:"", answerOf:p=>`How did ${p} answer?`, qno:(i,n)=>`Question ${i} of ${n}`,
     hintChoice:"Tap what you think the player chose", hintKanji:"Type one word", placeholder:"e.g. Hero",
     back:"Back", toTop:"Players", next:"Next", check:"See results!",
     correctOf:(ok,n)=>`<small> / ${n} correct</small>`, review:"Answers",
     qlabel:i=>`Q${i}`, theirs:"Player", yours:"You", reason:"Reason",
-    msgs:["Perfect score! A true fan!","Amazing! You really know them!","Nice! Try another player too","So close! Try again!"],
-    again:"Try another player", retry:"Try the same player again",
+    msgs:["Perfect score! A true fan!","Amazing! You really know them!","Nice! Not bad at all!","Close! Thanks for playing!"],
+    confirmH:p=>`Play with ${p}?`,
+    confirmTxt:"You can play <strong>only once</strong>.<br>Once you choose a player, you can't change.",
+    confirmOk:"Let's go!", confirmBack:"Choose again",
+    doneNote:"You can only play once. Thank you for joining!",
     testbar:"⚠ TEST MODE: These are sample answers, not the players' real answers.",
     loadErr:"Couldn't load the answer data.", loadErr2:"Please try again a little later."
   }
@@ -239,6 +245,14 @@ function render(){
   else if (state.screen==="result") showResult();
   else showTop();
 }
+/* ===== 1回だけ：この端末の記録 ===== */
+const playKey = () => "bq_play_" + (DATA.test ? "test" : "live");
+function savePlay(done){
+  try{ localStorage.setItem(playKey(), JSON.stringify({player:state.player, step:state.step, answers:state.answers, done:!!done})); }catch(e){}
+}
+function loadPlay(){
+  try{ const s = localStorage.getItem(playKey()); return s ? JSON.parse(s) : null; }catch(e){ return null; }
+}
 function testBar(){
   if (!DATA.test) return;
   app.insertAdjacentHTML("afterbegin", `<div class="testbar">${t().testbar}</div>`);
@@ -263,10 +277,28 @@ function showTop(){
           </button>`).join("")}
       </div>
     </div>`;
-  app.querySelectorAll(".opt[data-i]").forEach(b => b.onclick = () => {
-    state = {screen:"q", player: PLAYERS[+b.dataset.i].ja, step:0, answers:{}};
-    showQuestion();
-  });
+  app.querySelectorAll(".opt[data-i]").forEach(b => b.onclick = () => showConfirm(PLAYERS[+b.dataset.i].ja));
+  testBar();
+  window.scrollTo(0,0);
+}
+
+/* ===== 画面：選手の確認 ===== */
+function showConfirm(name){
+  state.screen = "top";
+  app.innerHTML = `
+    <div class="card center">
+      <h2>${esc(t().confirmH(pName(name)))}</h2>
+      <p class="lead">${t().confirmTxt}</p>
+      <div class="btn-row">
+        <button class="btn btn-sub" id="cBack">${t().confirmBack}</button>
+        <button class="btn btn-main" id="cOk">${t().confirmOk}</button>
+      </div>
+    </div>`;
+  document.getElementById("cBack").onclick = showTop;
+  document.getElementById("cOk").onclick = () => {
+    state = {screen:"q", player:name, step:0, answers:{}};
+    savePlay(false); showQuestion();
+  };
   testBar();
   window.scrollTo(0,0);
 }
@@ -296,22 +328,21 @@ function showQuestion(){
       <div class="qhint">${q.type==="kanji" ? t().hintKanji : t().hintChoice}</div>
       ${body}
       <div class="btn-row">
-        <button class="btn btn-sub" id="back">${state.step===0 ? t().toTop : t().back}</button>
+        ${state.step===0 ? "" : `<button class="btn btn-sub" id="back">${t().back}</button>`}
         <button class="btn btn-main" id="next" ${cur ? "" : "disabled"}>${last ? t().check : t().next}</button>
       </div>
     </div>`;
   const next = document.getElementById("next");
   app.querySelectorAll(".opt[data-v]").forEach(b => b.onclick = () => {
-    state.answers[q.id] = b.dataset.v;
+    state.answers[q.id] = b.dataset.v; savePlay(false);
     app.querySelectorAll(".opt[data-v]").forEach(x => x.classList.toggle("sel", x === b));
     next.disabled = false;
   });
   const k = document.getElementById("kanji");
-  if (k){ k.oninput = () => { state.answers[q.id] = k.value.trim(); next.disabled = !k.value.trim(); }; }
-  document.getElementById("back").onclick = () => {
-    if (state.step === 0) showTop(); else { state.step--; showQuestion(); }
-  };
-  next.onclick = () => { if (last) showResult(); else { state.step++; showQuestion(); } };
+  if (k){ k.oninput = () => { state.answers[q.id] = k.value.trim(); savePlay(false); next.disabled = !k.value.trim(); }; }
+  const back = document.getElementById("back");
+  if (back) back.onclick = () => { state.step--; savePlay(false); showQuestion(); };
+  next.onclick = () => { if (last) { savePlay(true); showResult(); } else { state.step++; savePlay(false); showQuestion(); } };
   testBar();
   window.scrollTo(0,0);
 }
@@ -356,11 +387,7 @@ function showResult(){
       </div>
     </div>
     <div class="card"><h2>${t().review}</h2>${rows}</div>
-    <button class="btn btn-main" id="again">${t().again}</button>
-    <div style="height:10px"></div>
-    <button class="btn btn-sub" id="retry">${t().retry}</button>`;
-  document.getElementById("again").onclick = showTop;
-  document.getElementById("retry").onclick = () => { state = {screen:"q", player:state.player, step:0, answers:{}}; showQuestion(); };
+    <p class="center muted">${t().doneNote}</p>`;
   testBar();
   window.scrollTo(0,0);
 }
@@ -384,7 +411,18 @@ function showResult(){
 setLang(lang);
 fetch("answers.json?t=" + Date.now())
   .then(r => { if(!r.ok) throw new Error(r.status); return r.json(); })
-  .then(d => { DATA = d && d.players ? d : {players:{}}; loaded = true; render(); })
+  .then(d => {
+    DATA = d && d.players ? d : {players:{}};
+    if (DATA.test && new URLSearchParams(location.search).get("reset")==="1"){
+      try{ localStorage.removeItem(playKey()); }catch(e){}
+    }
+    const saved = loadPlay();
+    if (saved && saved.player && DATA.players[saved.player]){
+      state = {screen: saved.done ? "result" : "q", player:saved.player,
+               step: Math.min(saved.step||0, QUESTIONS.length-1), answers: saved.answers||{}};
+    }
+    loaded = true; render();
+  })
   .catch(() => { loadFailed = true; render(); });
 </script>
 </body>
