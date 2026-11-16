@@ -90,6 +90,15 @@
   @keyframes pop{0%{transform:scale(0);opacity:0}100%{transform:scale(1);opacity:1}}
   @keyframes fadeIn{0%{opacity:0}100%{opacity:1}}
   @keyframes fadeUp{0%{transform:translateY(14px);opacity:0}100%{transform:none;opacity:1}}
+  .when{text-align:center;font-size:12px;color:var(--gray);margin-top:6px}
+  .staff{text-align:center}
+  .nowlabel{font-size:12px;color:var(--gray)}
+  .clock{font-size:30px;font-weight:900;color:var(--blue-dark);font-variant-numeric:tabular-nums;letter-spacing:.03em;margin-bottom:12px}
+  .staff .show{font-size:18px;font-weight:800;color:var(--blue-dark);margin-bottom:12px}
+  .staff .muted{margin-top:8px}
+  .btn-check{background:var(--green);color:#fff}
+  .checked{display:inline-block;font-size:24px;font-weight:900;color:var(--green);border:4px solid var(--green);
+    border-radius:12px;padding:6px 18px;transform:rotate(-4deg)}
   footer{text-align:center;font-size:11px;color:var(--gray);padding:10px 0 24px}
 </style>
 </head>
@@ -180,6 +189,10 @@ const T = {
     confirmTxt:"回答できるのは<strong>1回だけ</strong>です。<br>選手を決めたら、あとから変えられません。",
     confirmOk:"挑戦する！", confirmBack:"選びなおす",
     doneNote:"回答は1回だけです。参加ありがとうございました！",
+    answeredAt:"回答した日時", nowLabel:"いまの時刻", showStaff:"この画面を係員に見せてね",
+    checkBtn:"係員確認（係員が押します）", checkNote:"※参加者の方は押さないでください",
+    checkQ:"係員の方ですか？<br>確認済みにすると元に戻せません。", checkNo:"やめる", checkYes:"確認済みにする",
+    checked:"係員確認済み",
     testbar:"⚠ テスト中：いま入っている答えは仮のものです（本人の答えではありません）",
     loadErr:"答えのデータを読み込めませんでした。", loadErr2:"時間をおいて、もう一度ひらいてください。"
   },
@@ -199,6 +212,10 @@ const T = {
     confirmTxt:"You can play <strong>only once</strong>.<br>Once you choose a player, you can't change.",
     confirmOk:"Let's go!", confirmBack:"Choose again",
     doneNote:"You can only play once. Thank you for joining!",
+    answeredAt:"Answered", nowLabel:"Current time", showStaff:"Please show this screen to a staff member",
+    checkBtn:"Staff check (staff only)", checkNote:"* Participants, please don't tap this",
+    checkQ:"Are you a staff member?<br>This can't be undone.", checkNo:"Cancel", checkYes:"Mark as checked",
+    checked:"Checked by staff",
     testbar:"⚠ TEST MODE: These are sample answers, not the players' real answers.",
     loadErr:"Couldn't load the answer data.", loadErr2:"Please try again a little later."
   }
@@ -249,7 +266,9 @@ function render(){
 /* ===== 1回だけ：この端末の記録 ===== */
 const playKey = () => "bq_play_" + (DATA.test ? "test" : "live");
 function savePlay(done){
-  try{ localStorage.setItem(playKey(), JSON.stringify({player:state.player, step:state.step, answers:state.answers, done:!!done})); }catch(e){}
+  if (done && !state.doneAt) state.doneAt = Date.now();
+  try{ localStorage.setItem(playKey(), JSON.stringify({player:state.player, step:state.step, answers:state.answers, done:!!done,
+    doneAt:state.doneAt||null, checkedAt:state.checkedAt||null})); }catch(e){}
 }
 function loadPlay(){
   try{ const s = localStorage.getItem(playKey()); return s ? JSON.parse(s) : null; }catch(e){ return null; }
@@ -377,20 +396,57 @@ function showResult(){
     </div></div>`;
   }).join("");
   const n = QUESTIONS.length;
-  const m = t().msgs;
-  const msg = ok===n ? m[0] : ok>=n-2 ? m[1] : ok>=3 ? m[2] : m[3];
   app.innerHTML = `
     <div class="card">
       <span class="player-tag">${esc(pName(state.player))}${t().sama}</span>
       <div class="score">
         <div class="big">${ok}${t().correctOf(ok,n)}</div>
-        <div class="msg">${msg}</div>
       </div>
+      ${state.doneAt ? `<div class="when">${t().answeredAt}：${fmt(state.doneAt)}</div>` : ""}
+    </div>
+    <div class="card staff">
+      <div class="nowlabel">${t().nowLabel}</div>
+      <div class="clock" id="clock"></div>
+      ${state.checkedAt
+        ? `<div class="checked">✓ ${t().checked}</div><div class="when">${fmt(state.checkedAt)}</div>`
+        : `<div class="show">${t().showStaff}</div>
+           <button class="btn btn-check" id="chk">${t().checkBtn}</button>
+           <div class="muted">${t().checkNote}</div>`}
     </div>
     <div class="card"><h2>${t().review}</h2>${rows}</div>
     <p class="center muted">${t().doneNote}</p>`;
+  const chk = document.getElementById("chk");
+  if (chk) chk.onclick = showCheckConfirm;
+  startClock();
   testBar();
   window.scrollTo(0,0);
+}
+let clockTimer = null;
+function startClock(){
+  clearInterval(clockTimer);
+  const tick = () => {
+    const el = document.getElementById("clock");
+    if (!el){ clearInterval(clockTimer); return; }
+    const d = new Date(), z = v => String(v).padStart(2,"0");
+    el.textContent = `${d.getMonth()+1}/${d.getDate()} ${z(d.getHours())}:${z(d.getMinutes())}:${z(d.getSeconds())}`;
+  };
+  tick(); clockTimer = setInterval(tick, 1000);
+}
+function fmt(ms){
+  const d = new Date(ms), z = v => String(v).padStart(2,"0");
+  return `${d.getMonth()+1}/${d.getDate()} ${z(d.getHours())}:${z(d.getMinutes())}`;
+}
+function showCheckConfirm(){
+  const box = document.querySelector(".staff");
+  box.innerHTML = `<div class="nowlabel">${t().nowLabel}</div><div class="clock" id="clock"></div>
+    <div class="show">${t().checkQ}</div>
+    <div class="btn-row">
+      <button class="btn btn-sub" id="chkNo">${t().checkNo}</button>
+      <button class="btn btn-check" id="chkYes">${t().checkYes}</button>
+    </div>`;
+  startClock();
+  document.getElementById("chkNo").onclick = showResult;
+  document.getElementById("chkYes").onclick = () => { state.checkedAt = Date.now(); savePlay(true); showResult(); };
 }
 
 /* ===== 起動時のロゴ（画像がないロゴは出さない） ===== */
@@ -420,7 +476,8 @@ fetch("answers.json?t=" + Date.now())
     const saved = loadPlay();
     if (saved && saved.player && DATA.players[saved.player]){
       state = {screen: saved.done ? "result" : "q", player:saved.player,
-               step: Math.min(saved.step||0, QUESTIONS.length-1), answers: saved.answers||{}};
+               step: Math.min(saved.step||0, QUESTIONS.length-1), answers: saved.answers||{},
+               doneAt: saved.doneAt||null, checkedAt: saved.checkedAt||null};
     }
     loaded = true; render();
   })
