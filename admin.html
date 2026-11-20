@@ -83,7 +83,7 @@
 const PLAYERS = [
   "西田 有志","中村 駿介","富田 将馬","アントワーヌ・ブリザール","仲本 賢優",
   "山内 晶大","山本 智大","甲斐 優斗","伊賀 亮平","西山 大翔",
-  "西川 馨太郎","望月 大亮","ブライアン・バグナス","エバデダン・ラリー","フィニアン・マッカーシー","ミゲル・ロペス"
+  "西川 馨太郎","ブライアン・バグナス","エバデダン・ラリー","フィニアン・マッカーシー","ミゲル・ロペス"
 ];
 const QUESTIONS = [
   {id:"q1", type:"choice", text:"①災害時に1つだけ持って逃げるなら何を選ぶ？", options:["水","スマートフォン","懐中電灯","バレーボール","その他"]},
@@ -135,7 +135,9 @@ function renderForm(){
       <div class="sub"><span>理由（なくてもOK）</span>
       <input type="text" data-k="q7_reason" value="${esc(a.q7_reason)}"></div>`;
     if (q.id === "q1") html += `<div class="sub"><span>「その他」の中身（その他を選んだ選手だけ）</span>
-      <input type="text" data-k="q1_other" value="${esc(a.q1_other)}"></div>`;
+      <input type="text" data-k="q1_other" value="${esc(a.q1_other)}"></div>
+      <div class="sub"><span>「その他」で正解にする言葉（だいたい当たり用。「、」で区切る。例：財布、お金）</span>
+      <input type="text" data-k="q1_other_ok" value="${esc(a.q1_other_ok)}"></div>`;
     if (q.id === "q2") html += `<div class="sub"><span>理由（日本語）※答え合わせの画面に出ます</span>
       <input type="text" data-k="q2_reason" value="${esc(a.q2_reason)}"></div>
       <div class="sub"><span>理由（英語・なくてもOK）</span>
