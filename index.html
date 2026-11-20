@@ -152,6 +152,9 @@
   .checked{display:inline-block;font-size:24px;font-weight:900;color:var(--green);border:4px solid var(--green);
     border-radius:12px;padding:6px 18px;transform:rotate(-4deg)}
   .checkbar{background:#e8f6ee;color:#11683c;border-color:var(--green)}
+  .otherbox{margin-top:12px}
+  .otherbox label{display:block;font-size:13px;font-weight:700;color:var(--blue-dark);margin-bottom:6px}
+  input.other{font-size:17px;text-align:left}
   footer{text-align:center;font-size:11px;color:var(--gray);padding:10px 0 24px}
 </style>
 </head>
@@ -215,7 +218,6 @@ const PLAYERS = [
   {ja:"伊賀 亮平", en:"Ryohei Iga"},
   {ja:"西山 大翔", en:"Hiroto Nishiyama"},
   {ja:"西川 馨太郎", en:"Keitaro Nishikawa"},
-  {ja:"望月 大亮", en:"Daisuke Mochizuki"},
   {ja:"ブライアン・バグナス", en:"Bryan Bagunas"},
   {ja:"エバデダン・ラリー", en:"Larry Evbade-Dan"},
   {ja:"フィニアン・マッカーシー", en:"Fynnian McCarthy"},
@@ -279,6 +281,7 @@ const T = {
     checkBtn:"係員確認（係員が押します）", checkNote:"※参加者の方は押さないでください",
     checkQ:"係員の方ですか？<br>確認済みにすると元に戻せません。", checkNo:"やめる", checkYes:"確認済みにする",
     checked:"係員確認済み",
+    otherLbl:"選手が書いたと思う「その他」の中身を入れてね", otherPh:"例：家族の写真",
     checkbar:"🔧 チェック用：何回でもできます（記録は残りません）", checkAgain:"ほかの選手をチェックする",
     testbar:"⚠ テスト中：いま入っている答えは仮のものです（本人の答えではありません）",
     loadErr:"答えのデータを読み込めませんでした。", loadErr2:"時間をおいて、もう一度ひらいてください。"
@@ -309,6 +312,7 @@ const T = {
     checkBtn:"Staff check (staff only)", checkNote:"* Participants, please don't tap this",
     checkQ:"Are you a staff member?<br>This can't be undone.", checkNo:"Cancel", checkYes:"Mark as checked",
     checked:"Checked by staff",
+    otherLbl:"What do you think the player wrote?", otherPh:"e.g. Family photo",
     checkbar:"🔧 CHECK MODE: Unlimited tries (nothing is saved)", checkAgain:"Check another player",
     testbar:"⚠ TEST MODE: These are sample answers, not the players' real answers.",
     loadErr:"Couldn't load the answer data.", loadErr2:"Please try again a little later."
@@ -437,6 +441,12 @@ function showQuestion(){
   if (q.type === "choice"){
     body = `<div class="list">${q.options.map(o =>
       `<button class="opt ${cur===o.ja?"sel":""}" data-v="${esc(o.ja)}">${esc(o[lang])}</button>`).join("")}</div>`;
+    if (q.options.some(o => o.ja === "その他")){
+      body += `<div class="otherbox" id="otherbox" style="display:${cur==="その他"?"block":"none"}">
+        <label for="other">${t().otherLbl}</label>
+        <input type="text" id="other" class="other" maxlength="30" placeholder="${esc(t().otherPh)}" value="${esc(state.answers[q.id+"_other"]||"")}" autocomplete="off">
+      </div>`;
+    }
   } else if (q.type === "player"){
     body = `<div class="grid">${PLAYERS.map(p =>
       `<button class="opt ${cur===p.ja?"sel":""}" data-v="${esc(p.ja)}">${esc(p[lang]).replace(/・/g,"・<wbr>")}${lang==="ja" ? "<wbr> 選手" : ""}</button>`).join("")}</div>`;
@@ -459,15 +469,23 @@ function showQuestion(){
       ${body}
       <div class="btn-row">
         ${state.step===0 ? "" : `<button class="btn btn-sub" id="back">${t().back}</button>`}
-        <button class="btn btn-main" id="next" ${cur ? "" : "disabled"}>${last ? t().check : t().next}</button>
+        <button class="btn btn-main" id="next" ${cur && !(cur==="その他" && !state.answers[q.id+"_other"]) ? "" : "disabled"}>${last ? t().check : t().next}</button>
       </div>
     </div>`;
   const next = document.getElementById("next");
   app.querySelectorAll(".opt[data-v]").forEach(b => b.onclick = () => {
     state.answers[q.id] = b.dataset.v; savePlay(false);
     app.querySelectorAll(".opt[data-v]").forEach(x => x.classList.toggle("sel", x === b));
-    next.disabled = false;
+    next.disabled = (b.dataset.v === "その他" && !state.answers[q.id+"_other"]);
+    const ob = document.getElementById("otherbox");
+    if (ob){
+      const isOther = b.dataset.v === "その他";
+      ob.style.display = isOther ? "block" : "none";
+      if (isOther) setTimeout(() => { const o = document.getElementById("other"); if (o) o.focus(); }, 50);
+    }
   });
+  const oth = document.getElementById("other");
+  if (oth) oth.oninput = () => { state.answers[q.id+"_other"] = oth.value.trim(); savePlay(false); next.disabled = !oth.value.trim(); };
   const k = document.getElementById("kanji");
   if (k){ k.oninput = () => { state.answers[q.id] = k.value.trim(); savePlay(false); next.disabled = !k.value.trim(); }; }
   const back = document.getElementById("back");
@@ -478,10 +496,35 @@ function showQuestion(){
 }
 
 /* ===== 判定 ===== */
+// ひらがな・カタカナ・全角半角・大文字小文字・空白の違いをそろえる
+function soft(x){
+  return String(x ?? "").normalize("NFKC").toLowerCase()
+    .replace(/[\u30a1-\u30f6]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60))
+    .replace(/[\s\u3000、。・,.!！?？「」()（）\/／]/g, "");
+}
+function bigrams(x){ const a = []; for (let i = 0; i < x.length - 1; i++) a.push(x.slice(i, i+2)); return a; }
+function similar(a, b){
+  if (a.length < 2 || b.length < 2) return a === b ? 1 : 0;
+  const A = bigrams(a), B = bigrams(b).slice(); let hit = 0;
+  A.forEach(g => { const k = B.indexOf(g); if (k >= 0){ hit++; B.splice(k,1); } });
+  return 2*hit / (A.length + bigrams(b).length);
+}
+// だいたい合っているか：キーワードが入っている／似ている
+function roughMatch(typed, a, qid){
+  const t = soft(typed); if (!t) return false;
+  const words = String((a && a[qid+"_other_ok"]) || "").split(/[、,，]/).map(soft).filter(Boolean);
+  const main = soft(a && a[qid+"_other"]);
+  if (main) words.push(main);
+  return words.some(w => t.includes(w) || (t.length >= 2 && w.includes(t)) || similar(t, w) >= 0.5);
+}
 const splitAns = s => String(s ?? "").split(/[、,，\/／]/).map(x => x.trim()).filter(Boolean);
 function isCorrect(q, mine, correct){
   if (q.type === "kanji") return splitAns(correct).map(norm).includes(norm(mine));
   if (q.type === "player" && correct === "*") return true;   // 「全員」と答えた問題は誰を選んでも正解
+  if (q.type === "choice" && correct === "その他") {
+    // 「その他」は、選んだうえで中身がだいたい合っていれば正解
+    return mine === "その他" && roughMatch(state.answers[q.id+"_other"], DATA.players[state.player], q.id);
+  }
   return norm(mine) === norm(correct);
 }
 
@@ -507,7 +550,7 @@ function showResult(){
     return `<div class="res"><div class="head">
       <div class="mark ${hit?"ok":"ng"}">${hit?"○":"×"}</div>
       <div><div class="q">${t().qlabel(i+1)}　${esc(q[lang])}</div>
-      <div class="a">${t().theirs}：<b>${esc(shown)}</b>　／　${t().yours}：${esc(valLabel(q, mine))}</div>${note}</div>
+      <div class="a">${t().theirs}：<b>${esc(shown)}</b>　／　${t().yours}：${esc(valLabel(q, mine))}${mine==="その他" && state.answers[q.id+"_other"] ? `（${esc(state.answers[q.id+"_other"])}）` : ""}</div>${note}</div>
     </div></div>`;
   }).join("");
   const n = QS.length;
