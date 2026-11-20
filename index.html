@@ -22,7 +22,7 @@
   .lang button{border:none;background:none;color:#fff;font-family:inherit;font-size:13px;font-weight:700;
     padding:4px 14px;border-radius:999px;cursor:pointer}
   .lang button.on{background:#fff;color:var(--blue-dark)}
-  main{max-width:560px;margin:0 auto;padding:18px 16px 40px}
+  main{max-width:560px;margin:0 auto;padding:18px 16px 40px;position:relative;z-index:1}
   .card{background:var(--white);border-radius:16px;padding:20px 18px;box-shadow:0 2px 10px rgba(11,42,102,.08);margin-bottom:16px}
   .lead{font-size:15px}
   .lead strong{color:var(--blue)}
@@ -173,6 +173,67 @@
   .opt.pl.soon .no{background:none;color:#b8bec9}
   .opt.pl.soon .no small{-webkit-text-fill-color:#b8bec9}
   .opt.pl.soon::before{background:#d1d5db}
+  /* ===== トップ画面（スタジアム風） ===== */
+  body.is-top{background:
+      radial-gradient(ellipse 60% 35% at 8% 0%,rgba(255,255,255,.55),transparent 70%),
+      radial-gradient(ellipse 60% 35% at 92% 2%,rgba(255,255,255,.5),transparent 70%),
+      linear-gradient(180deg,#06215e 0%,#0d3a99 30%,#1557d0 65%,#1b63e0 100%);min-height:100vh}
+  body.is-top::before{content:"";position:fixed;z-index:0;inset:0;pointer-events:none;opacity:.22;
+    background-image:radial-gradient(rgba(255,255,255,.9) 1px,transparent 1.6px);background-size:9px 9px;
+    -webkit-mask-image:linear-gradient(115deg,#000 0%,transparent 35%,transparent 65%,#000 100%);mask-image:linear-gradient(115deg,#000 0%,transparent 35%,transparent 65%,#000 100%)}
+  body.is-top header{display:none}
+  body.is-top footer{color:rgba(255,255,255,.75)}
+  body.is-top main{padding-top:calc(10px + env(safe-area-inset-top))}
+  .hero{position:relative;margin:0 -16px;padding:18px 16px 70px;overflow:hidden}
+  .hero .netbg{position:absolute;right:-30px;top:120px;width:75%;height:150px;transform:skewY(-9deg);opacity:.35;
+    background-image:linear-gradient(rgba(255,255,255,.7) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.7) 1px,transparent 1px);
+    background-size:14px 14px;border-top:5px solid rgba(255,255,255,.9)}
+  .hero .crowd{position:absolute;left:0;right:0;bottom:-6px;width:100%;height:96px;color:#04184a;opacity:.85}
+  .hero-in{position:relative;z-index:1}
+  .hpill{display:inline-block;color:#fff;font-weight:800;font-size:min(4vw,16px);border:2px solid rgba(255,255,255,.85);
+    border-radius:999px;padding:5px 16px;background:rgba(6,33,94,.35);transform:rotate(-2deg)}
+  .htitle{margin-top:12px;font-weight:900;font-style:italic;line-height:1.05;color:#fff;transform:rotate(-4deg) skewX(-6deg);transform-origin:left}
+  .htitle span{display:block;font-size:min(10.2vw,52px);letter-spacing:-.01em;
+    -webkit-text-stroke:min(1.6vw,8px) #072a7a;paint-order:stroke fill;text-shadow:0 5px 0 #041a52,0 10px 24px rgba(0,0,0,.35)}
+  .swoosh{display:block;width:88%;height:24px;margin-top:-4px;transform:rotate(-4deg)}
+  .hball{position:absolute;right:-14px;top:34px;width:min(19vw,100px);aspect-ratio:1}
+  .hball svg:first-child{width:100%;height:100%;filter:drop-shadow(0 8px 14px rgba(0,0,0,.4));animation:hspin 9s linear infinite}
+  .hball .trail{position:absolute;left:-55%;bottom:-38%;width:90%;height:auto;z-index:-1}
+  @keyframes hspin{to{transform:rotate(360deg)}}
+  .hlang{display:flex;width:max-content;margin:18px auto 0;background:rgba(6,33,94,.45);border:2px solid rgba(255,255,255,.75)}
+  .hlang button{font-size:15px;padding:6px 20px}
+  .hcard{position:relative;margin-top:-56px;z-index:2;border-radius:22px;padding:22px 18px;box-shadow:0 14px 30px rgba(0,0,0,.28)}
+  .hh2{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .hh2 .slashes{display:flex;gap:3px;flex:none}
+  .hh2 .slashes i{display:block;width:5px;height:30px;background:#2f6fe0;transform:skewX(-20deg);border-radius:2px}
+  .hh2 .slashes i+i{background:#f5c400}
+  .hh2t{font-size:22px;font-weight:900;font-style:italic;color:var(--blue-dark);
+    background:linear-gradient(transparent 72%,#ffe066 72%,#ffe066 92%,transparent 92%)}
+  .hsteps{list-style:none;display:flex;flex-direction:column;gap:10px;margin-top:14px}
+  .hsteps li{display:flex;align-items:center;gap:12px;background:var(--blue-light);border-radius:14px;padding:12px}
+  .hsteps .num{flex:none;width:34px;height:34px;border-radius:50%;background:var(--blue-dark);color:#fff;font-weight:900;
+    display:flex;align-items:center;justify-content:center;font-size:16px}
+  .hsteps .ic{flex:none;width:38px;height:38px;color:var(--blue-dark)}
+  .hsteps .ic svg{width:100%;height:100%;fill:currentColor;stroke:currentColor}
+  .hsteps .ic svg[fill="none"]{fill:none}
+  .hsteps .tx{font-size:15px;font-weight:700;line-height:1.5}
+  .hrule{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;background:#fde3e3;color:var(--red);
+    border-radius:12px;padding:10px 10px;font-size:min(3.8vw,15px);font-weight:900;white-space:nowrap}
+  .hrule .wi{width:24px;height:24px;flex:none}
+  .hrule .wi svg{width:100%;height:100%}
+  .btn-go{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;gap:14px;width:88%;margin:22px auto 0;
+    border:3px solid #fff;border-radius:999px;padding:16px;font-family:inherit;font-size:21px;font-weight:900;color:#0b2a66;cursor:pointer;
+    background:linear-gradient(180deg,#ffe45c,#f5c400);box-shadow:0 6px 0 #b98f00,0 12px 24px rgba(0,0,0,.3)}
+  .btn-go:active{transform:translateY(3px);box-shadow:0 3px 0 #b98f00,0 6px 14px rgba(0,0,0,.3)}
+  .btn-go .chev{font-size:30px;line-height:1;margin-top:-4px}
+  .court{height:90px;margin:24px -16px 0;position:relative;
+    background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.18));
+    clip-path:polygon(0 30%,100% 30%,100% 100%,0 100%)}
+  .court::before{content:"";position:absolute;inset:0;
+    background:linear-gradient(#fff,#fff) 0 30%/100% 3px no-repeat,
+      linear-gradient(73deg,transparent 49%,#fff 49.5%,#fff 50.5%,transparent 51%) -40% 0/60% 100% no-repeat,
+      linear-gradient(-73deg,transparent 49%,#fff 49.5%,#fff 50.5%,transparent 51%) 140% 0/60% 100% no-repeat;opacity:.8}
+  body.is-top .testbar{margin-top:6px}
   footer{text-align:center;font-size:11px;color:var(--gray);padding:10px 0 24px}
 </style>
 </head>
@@ -276,7 +337,7 @@ const T = {
   ja:{
     sub:"大阪ブルテオン × 枚方寝屋川消防組合", title:"選手アンケート 答え当てクイズ",
     foot:"大阪ブルテオン × 枚方寝屋川消防組合 コラボ企画",
-    introH:"選手の答えを当てよう！",
+    introH:"選手の答えを当てよう！", heroTitle:["選手アンケート","答え当てクイズ"], goBtn:"クイズに挑戦する",
     intro:n=>`大阪ブルテオンの選手に、消防のアンケートに答えてもらいました。<br>その選手が<strong>どう答えたか</strong>を予想するクイズです。`,
     steps:["答えを当てたい選手を<b>1人</b>選ぶ","その選手がアンケートで選んだ答えを予想してタップ","最後に何問当たったかが出るので、<b>係員に見せてね</b>"],
     rule:"挑戦できるのは1人1回・選手は1人だけ",
@@ -307,7 +368,7 @@ const T = {
   en:{
     sub:"OSAKA BLUTEON × Hirakata Neyagawa Fire Dept.", title:"Guess the Player's Answers!",
     foot:"OSAKA BLUTEON × Hirakata Neyagawa Fire Department Collaboration",
-    introH:"Can you guess their answers?",
+    introH:"Can you guess their answers?", heroTitle:["Guess the","Player's Answers!"], goBtn:"Take the quiz",
     intro:n=>`Osaka Bluteon players answered a survey from the fire department.<br>Guess <strong>how a player answered</strong>.`,
     steps:["Choose <b>one</b> player","Tap the answer you think the player chose","See how many you got right and <b>show it to a staff member</b>"],
     rule:"One try per person, with one player only",
@@ -383,6 +444,7 @@ function render(){
   if (!loaded) return;
   if (state.screen==="q") showQuestion();
   else if (state.screen==="result") showResult();
+  else if (state.screen==="select") showSelect();
   else showTop();
 }
 /* ===== 1回だけ：この端末の記録 ===== */
@@ -406,16 +468,70 @@ function testBar(){
 }
 
 /* ===== 画面：スタート ===== */
+/* ===== 画面：スタート（トップ） ===== */
+const ICON = {
+  person:`<svg viewBox="0 0 48 48"><circle cx="24" cy="15" r="9"/><path d="M6 44c0-10 8-17 18-17s18 7 18 17z"/></svg>`,
+  board:`<svg viewBox="0 0 48 48" fill="none" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="8" width="30" height="36" rx="4"/><rect x="17" y="4" width="14" height="8" rx="2" fill="currentColor"/><path d="M15 21l2.5 2.5L22 19M26 21h8M15 30l2.5 2.5L22 28M26 30h8M15 38h4M26 38h8"/></svg>`,
+  trophy:`<svg viewBox="0 0 48 48"><path d="M13 5h22v13a11 11 0 0 1-22 0z"/><path d="M13 9H6c0 7 3 11 8 12M35 9h7c0 7-3 11-8 12" fill="none" stroke="currentColor" stroke-width="3.4"/><rect x="21" y="28" width="6" height="8"/><path d="M14 44c0-5 4-8 10-8s10 3 10 8z"/><path d="M24 9.5l2 4.2 4.6.6-3.3 3.2.8 4.6-4.1-2.2-4.1 2.2.8-4.6-3.3-3.2 4.6-.6z" fill="#fff"/></svg>`,
+  warn:`<svg viewBox="0 0 48 48"><path d="M24 4L2 44h44z" fill="#d62828"/><rect x="21.5" y="17" width="5" height="15" rx="2" fill="#fff"/><circle cx="24" cy="37.5" r="3" fill="#fff"/></svg>`
+};
+function ballSVG(){
+  return `<svg viewBox="0 0 100 100" aria-hidden="true"><defs><clipPath id="hbc"><circle cx="50" cy="50" r="47"/></clipPath>
+    <radialGradient id="hbs" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".3"/></radialGradient></defs>
+    <circle cx="50" cy="50" r="47" fill="#fff"/>
+    <g clip-path="url(#hbc)" fill="none"><path d="M-5 38 C 25 22, 70 20, 105 34" stroke="#1446a0" stroke-width="15"/>
+    <path d="M-5 62 C 30 48, 72 50, 105 66" stroke="#f5c400" stroke-width="15"/><path d="M46 -5 C 30 30, 32 70, 54 105" stroke="#f5c400" stroke-width="13"/>
+    <g stroke="#0b2a66" stroke-width="1.2" opacity=".55"><path d="M-5 30.5 C 25 15, 70 13, 105 26.5"/><path d="M-5 45.5 C 25 29, 70 27, 105 41.5"/>
+    <path d="M-5 54.5 C 30 40.5, 72 42.5, 105 58.5"/><path d="M-5 69.5 C 30 55.5, 72 57.5, 105 73.5"/><path d="M39.5 -5 C 23.5 30, 25.5 70, 47.5 105"/><path d="M52.5 -5 C 36.5 30, 38.5 70, 60.5 105"/></g></g>
+    <circle cx="50" cy="50" r="47" fill="url(#hbs)"/><circle cx="50" cy="50" r="47" fill="none" stroke="#0b2a66" stroke-width="2"/></svg>`;
+}
+function crowdSVG(){
+  // 応援する観客のシルエット（形だけの図形）
+  const xs = [10,48,84,122,160,198,236,274,312,350,388];
+  const people = xs.map((x,i) => {
+    const h = 30 + (i%3)*8, up = i%2===0;
+    const arms = up ? `<path d="M${x-12} ${100-h} l-9 -26 M${x+12} ${100-h} l9 -26" stroke-width="8" stroke-linecap="round"/>`
+                    : `<path d="M${x-12} ${100-h+4} l-6 -16 M${x+12} ${100-h+4} l12 -22" stroke-width="8" stroke-linecap="round"/>`;
+    return `<circle cx="${x}" cy="${100-h-14}" r="11"/><rect x="${x-15}" y="${100-h}" width="30" height="${h+10}" rx="12"/><g stroke="currentColor">${arms}</g>`;
+  }).join("");
+  return `<svg class="crowd" viewBox="0 0 400 110" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><g fill="currentColor">${people}</g></svg>`;
+}
 function showTop(){
   state.screen = "top";
+  document.body.classList.add("is-top");
+  const T0 = t();
+  app.innerHTML = `
+    <section class="hero">
+      <div class="netbg" aria-hidden="true"></div>
+      ${crowdSVG()}
+      <div class="hero-in">
+        <div class="hpill">${T0.sub}</div>
+        <h1 class="htitle">${T0.heroTitle.map(x=>`<span>${x}</span>`).join("")}</h1>
+        <svg class="swoosh" viewBox="0 0 300 30" preserveAspectRatio="none" aria-hidden="true"><path d="M4 22 C 80 6, 200 2, 296 8 L 294 14 C 200 10, 90 16, 8 28 Z" fill="#f5c400"/></svg>
+        <div class="hball">${ballSVG()}<svg class="trail" viewBox="0 0 120 80" aria-hidden="true"><path d="M0 78 C 40 70, 80 50, 110 20" stroke="#f5c400" stroke-width="7" fill="none" stroke-linecap="round" opacity=".9"/><path d="M14 78 C 50 72, 86 56, 112 30" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".7"/></svg></div>
+        <div class="lang hlang"><button data-l="ja" class="${lang==="ja"?"on":""}">日本語</button><button data-l="en" class="${lang==="en"?"on":""}">English</button></div>
+      </div>
+    </section>
+    <div class="card hcard">
+      <h2 class="hh2"><span class="slashes"><i></i><i></i></span><span class="hh2t">${T0.introH}</span></h2>
+      <p class="lead">${T0.intro()}</p>
+      <ol class="hsteps">${T0.steps.map((x,i)=>`<li><span class="num">${i+1}</span><span class="ic">${ICON[["person","board","trophy"][i]]}</span><span class="tx">${x}</span></li>`).join("")}</ol>
+      <div class="hrule"><span class="wi">${ICON.warn}</span>${T0.rule}</div>
+    </div>
+    <button class="btn-go" id="go">${T0.goBtn}<span class="chev">›</span></button>
+    <div class="court" aria-hidden="true"></div>`;
+  app.querySelectorAll(".hlang button").forEach(b => b.onclick = () => setLang(b.dataset.l));
+  document.getElementById("go").onclick = showSelect;
+  testBar();
+  window.scrollTo(0,0);
+}
+
+/* ===== 画面：選手を選ぶ ===== */
+function showSelect(){
+  state.screen = "select";
+  document.body.classList.remove("is-top");
   const readyCount = PLAYERS.filter(p => isReady(p.ja)).length;
   app.innerHTML = `
-    <div class="card">
-      <h2>${t().introH}</h2>
-      <p class="lead">${t().intro()}</p>
-      <ol class="steps">${t().steps.map((x,i)=>`<li><span class="num">${i+1}</span><span>${x}</span></li>`).join("")}</ol>
-      <div class="rule">${t().rule}</div>
-    </div>
     <div class="card">
       <h2>${t().chooseH}</h2>
       <div class="sub-hint">${t().chooseHint}</div>
@@ -427,15 +543,18 @@ function showTop(){
             ${isReady(p.ja) ? "" : `<span class="soonbadge">COMING SOON</span>`}
           </button>`).join("")}
       </div>
+      <div class="btn-row"><button class="btn btn-sub" id="toTop">${t().back}</button></div>
     </div>`;
   app.querySelectorAll(".opt[data-i]").forEach(b => b.onclick = () => showConfirm(PLAYERS[+b.dataset.i].ja));
+  document.getElementById("toTop").onclick = showTop;
   testBar();
   window.scrollTo(0,0);
 }
 
 /* ===== 画面：選手の確認 ===== */
 function showConfirm(name){
-  state.screen = "top";
+  state.screen = "select";
+  document.body.classList.remove("is-top");
   app.innerHTML = `
     <div class="card center">
       <h2>${esc(t().confirmH(pName(name)))}</h2>
@@ -445,7 +564,7 @@ function showConfirm(name){
         <button class="btn btn-main" id="cOk">${t().confirmOk}</button>
       </div>
     </div>`;
-  document.getElementById("cBack").onclick = showTop;
+  document.getElementById("cBack").onclick = showSelect;
   document.getElementById("cOk").onclick = () => {
     state = {screen:"q", player:name, step:0, answers:{}};
     savePlay(false); showQuestion();
@@ -456,6 +575,7 @@ function showConfirm(name){
 
 /* ===== 画面：問題 ===== */
 function showQuestion(){
+  document.body.classList.remove("is-top");
   state.screen = "q";
   const QS = playerQs(state.player);
   const q = QS[state.step];
@@ -553,6 +673,7 @@ function isCorrect(q, mine, correct){
 
 /* ===== 画面：結果 ===== */
 function showResult(){
+  document.body.classList.remove("is-top");
   state.screen = "result";
   const a = DATA.players[state.player];
   let ok = 0;
@@ -598,7 +719,7 @@ function showResult(){
     ${CHECK ? `<button class="btn btn-main" id="again">${t().checkAgain}</button>`
             : `<p class="center muted">${t().doneNote}</p>`}`;
   const again = document.getElementById("again");
-  if (again) again.onclick = () => { state = {screen:"top", player:null, step:0, answers:{}}; showTop(); };
+  if (again) again.onclick = () => { state = {screen:"select", player:null, step:0, answers:{}}; showSelect(); };
   const chk = document.getElementById("chk");
   if (chk) chk.onclick = showCheckConfirm;
   startClock();
