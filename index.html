@@ -155,6 +155,24 @@
   .otherbox{margin-top:12px}
   .otherbox label{display:block;font-size:13px;font-weight:700;color:var(--blue-dark);margin-bottom:6px}
   input.other{font-size:17px;text-align:left}
+  .opt.soon{background:#f3f4f6;border-style:dashed;color:#9ca3af;opacity:1}
+  .soonbadge{display:block;width:max-content;margin:5px auto 0;font-size:10px;font-weight:800;letter-spacing:.08em;
+    color:#fff;background:#9ca3af;border-radius:999px;padding:1px 9px}
+  .opt.pl{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 8px 11px;position:relative;overflow:hidden}
+  .opt.pl .no{display:inline-flex;align-items:baseline;gap:2px;font-family:"Arial Black","Helvetica Neue",Arial,sans-serif;
+    font-style:italic;font-weight:900;font-size:24px;line-height:1;letter-spacing:-.02em;
+    background:linear-gradient(135deg,#0b2a66 0%,#1446a0 55%,#2f6fe0 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+    padding:0 4px}
+  .opt.pl .no small{font-size:10px;font-weight:900;letter-spacing:0;-webkit-text-fill-color:#1446a0;opacity:.75}
+  .opt.pl .nm{font-size:14px;line-height:1.35}
+  .opt.pl::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(#1446a0,#2f6fe0)}
+  .opt.pl.sel{background:linear-gradient(135deg,#0b2a66,#1446a0);border-color:#0b2a66;color:#fff}
+  .opt.pl.sel .no{background:none;-webkit-background-clip:initial;background-clip:initial;color:#fff}
+  .opt.pl.sel .no small{-webkit-text-fill-color:#cfe0ff}
+  .opt.pl.sel::before{background:#f5c400}
+  .opt.pl.soon .no{background:none;color:#b8bec9}
+  .opt.pl.soon .no small{-webkit-text-fill-color:#b8bec9}
+  .opt.pl.soon::before{background:#d1d5db}
   footer{text-align:center;font-size:11px;color:var(--gray);padding:10px 0 24px}
 </style>
 </head>
@@ -207,21 +225,21 @@
 <script>
 /* ===== 選手（日本語名がデータの名前。en は英語表示用） ===== */
 const PLAYERS = [
-  {ja:"西田 有志", en:"Yuji Nishida"},
-  {ja:"中村 駿介", en:"Shunsuke Nakamura"},
-  {ja:"富田 将馬", en:"Shoma Tomita"},
-  {ja:"アントワーヌ・ブリザール", en:"Antoine Brizard"},
-  {ja:"仲本 賢優", en:"Kenyu Nakamoto"},
-  {ja:"山内 晶大", en:"Akihiro Yamauchi"},
-  {ja:"山本 智大", en:"Tomohiro Yamamoto"},
-  {ja:"甲斐 優斗", en:"Yuto Kai"},
-  {ja:"伊賀 亮平", en:"Ryohei Iga"},
-  {ja:"西山 大翔", en:"Hiroto Nishiyama"},
-  {ja:"西川 馨太郎", en:"Keitaro Nishikawa"},
-  {ja:"ブライアン・バグナス", en:"Bryan Bagunas"},
-  {ja:"エバデダン・ラリー", en:"Larry Evbade-Dan"},
-  {ja:"フィニアン・マッカーシー", en:"Fynnian McCarthy"},
-  {ja:"ミゲル・ロペス", en:"Miguel López"}
+  {no:3,  ja:"中村 駿介", en:"Shunsuke Nakamura"},
+  {no:5,  ja:"富田 将馬", en:"Shoma Tomita"},
+  {no:6,  ja:"アントワーヌ・ブリザール", en:"Antoine Brizard"},
+  {no:8,  ja:"仲本 賢優", en:"Kenyu Nakamoto"},
+  {no:10, ja:"山内 晶大", en:"Akihiro Yamauchi"},
+  {no:11, ja:"西田 有志", en:"Yuji Nishida"},
+  {no:13, ja:"山本 智大", en:"Tomohiro Yamamoto"},
+  {no:15, ja:"甲斐 優斗", en:"Masato Kai"},
+  {no:16, ja:"伊賀 亮平", en:"Ryohei Iga"},
+  {no:18, ja:"西山 大翔", en:"Hiroto Nishiyama"},
+  {no:19, ja:"西川 馨太郎", en:"Keitaro Nishikawa"},
+  {no:22, ja:"ブライアン・バグナス", en:"Bryan Bagunas"},
+  {no:23, ja:"エバデダン・ラリー", en:"Larry Evbade-Dan"},
+  {no:33, ja:"フィニアン・マッカーシー", en:"Fynnian McCarthy"},
+  {no:81, ja:"ミゲル・ロペス", en:"Miguel López"}
 ];
 
 /* ===== 問題（選択肢は日本語がデータの値。en は英語表示用） ===== */
@@ -339,6 +357,10 @@ function playerQs(name){
   const a = DATA.players[name] || {};
   return QUESTIONS.filter(q => a[q.id] && String(a[q.id]).trim() !== "");
 }
+// 背番号つきの選手名（ブルテオンの青い背番号）
+function plInner(p){
+  return `<span class="no"><small>No.</small>${p.no}</span><span class="nm">${esc(p[lang]).replace(/・/g,"・<wbr>")}${lang==="ja" ? "<wbr> 選手" : ""}</span>`;
+}
 function isReady(name){ return playerQs(name).length > 0; }
 
 function setLang(l){
@@ -399,10 +421,11 @@ function showTop(){
       <div class="sub-hint">${t().chooseHint}</div>
       ${readyCount === 0 ? `<p class="muted">${t().allPreparing}</p>` : ""}
       <div class="grid">
-        ${PLAYERS.map((p,i) => isReady(p.ja) ? `
-          <button class="opt" data-i="${i}">
-            ${esc(p[lang]).replace(/・/g,"・<wbr>")}${lang==="ja" ? "<wbr> 選手" : ""}
-          </button>` : "").join("")}
+        ${PLAYERS.map((p,i) => `
+          <button class="opt pl ${isReady(p.ja) ? "" : "soon"}" data-i="${i}" ${isReady(p.ja) ? "" : "disabled"}>
+            ${plInner(p)}
+            ${isReady(p.ja) ? "" : `<span class="soonbadge">COMING SOON</span>`}
+          </button>`).join("")}
       </div>
     </div>`;
   app.querySelectorAll(".opt[data-i]").forEach(b => b.onclick = () => showConfirm(PLAYERS[+b.dataset.i].ja));
@@ -449,7 +472,7 @@ function showQuestion(){
     }
   } else if (q.type === "player"){
     body = `<div class="grid">${PLAYERS.map(p =>
-      `<button class="opt ${cur===p.ja?"sel":""}" data-v="${esc(p.ja)}">${esc(p[lang]).replace(/・/g,"・<wbr>")}${lang==="ja" ? "<wbr> 選手" : ""}</button>`).join("")}</div>`;
+      `<button class="opt pl ${cur===p.ja?"sel":""}" data-v="${esc(p.ja)}">${plInner(p)}</button>`).join("")}</div>`;
   } else {
     body = `<input type="text" id="kanji" maxlength="20" placeholder="${esc(t().placeholder)}" value="${esc(cur)}" autocomplete="off">`;
   }
