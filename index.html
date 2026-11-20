@@ -503,10 +503,10 @@
   @keyframes inSettle{
     0%{opacity:1;transform:translate(0,0) scale(1.08,.92) rotate(560deg);animation-timing-function:ease-out}
     10%{transform:translate(0,0) scale(1) rotate(570deg);animation-timing-function:cubic-bezier(.5,0,1,.6)}
-    40%{transform:translate(8vw,30vh) scale(.24,.21) rotate(650deg);animation-timing-function:cubic-bezier(0,.4,.5,1)}
-    55%{transform:translate(18vw,22vh) scale(.24) rotate(700deg);animation-timing-function:cubic-bezier(.5,0,1,.6)}
-    70%{transform:translate(26vw,30vh) scale(.24,.22) rotate(760deg);animation-timing-function:cubic-bezier(.2,.6,.4,1)}
-    100%{opacity:1;transform:translate(34vw,30vh) scale(.24) rotate(900deg)}}
+    40%{transform:translate(calc(var(--rx,34vw)*.25),var(--ry,30vh)) scale(var(--rs,.24),calc(var(--rs,.24)*.88)) rotate(650deg);animation-timing-function:cubic-bezier(0,.4,.5,1)}
+    55%{transform:translate(calc(var(--rx,34vw)*.55),calc(var(--ry,30vh) - 8vh)) scale(var(--rs,.24)) rotate(700deg);animation-timing-function:cubic-bezier(.5,0,1,.6)}
+    70%{transform:translate(calc(var(--rx,34vw)*.78),var(--ry,30vh)) scale(var(--rs,.24),calc(var(--rs,.24)*.92)) rotate(760deg);animation-timing-function:cubic-bezier(.2,.6,.4,1)}
+    100%{opacity:1;transform:translate(var(--rx,34vw),var(--ry,30vh)) scale(var(--rs,.24)) rotate(900deg)}}
   #intro .in-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:4}
   #intro.hit .in-flash{animation:flash .45s ease-out both}
   #intro.hit .in-bg{animation:inShake .45s cubic-bezier(.36,.07,.19,.97) both}
@@ -1044,6 +1044,13 @@ function showCheckConfirm(){
     it.style.setProperty("--ty", (top + tt.height*sc/2 - (tt.top + tt.height/2)) + "px");
     const cc = document.getElementById("inCollab").getBoundingClientRect();
     it.style.setProperty("--cy", ((H - Math.max(10, H*0.025) - cc.height/2) - (cc.top + cc.height/2)) + "px");
+    // ボールが止まる場所：消防車のタイヤと同じ高さ（地面）で、画面の右側
+    const W = window.innerWidth, D = Math.min(Math.min(W,H)*0.9, 560), rs = 0.24, d = D*rs;
+    const tr = it.querySelector(".in-truck").getBoundingClientRect();
+    const ground = tr.bottom - tr.height*0.03;
+    it.style.setProperty("--rs", rs);
+    it.style.setProperty("--ry", (ground - d/2 - H*0.44) + "px");
+    it.style.setProperty("--rx", (W - d/2 - Math.max(10, W*0.04) - W/2) + "px");
   };
   const go = () => { if (it.classList.contains("go")) return; place(); it.classList.add("go"); };
   setTimeout(go, 5200);
