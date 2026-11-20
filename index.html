@@ -531,6 +531,10 @@
   .opt.ch .oic{width:38px;height:38px}
   .askbox{margin-bottom:12px}
   .guide{margin-bottom:12px;padding:9px 12px}
+  /* 「クイズに挑戦する」ボタンがゆっくり大きく・小さく */
+  .btn-go{animation:goPulse 1.6s ease-in-out infinite}
+  .btn-go:active{animation:none}
+  @keyframes goPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
 </style>
 </head>
 <body>
