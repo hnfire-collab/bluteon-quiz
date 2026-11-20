@@ -492,7 +492,7 @@
   #intro.hit .in-tap{animation:inFade .6s .8s both,inBlink 1.3s 1.2s ease-in-out infinite}
   @keyframes inFade{0%{opacity:0;transform:translateY(10px)}100%{opacity:1;transform:none}}
   @keyframes inBlink{0%,100%{filter:brightness(1)}50%{filter:brightness(1.35)}}
-  #intro .in-truck{position:absolute;left:-2%;bottom:17%;width:min(48vw,300px);filter:drop-shadow(0 10px 12px rgba(0,0,0,.4));animation:inDrive 2.6s 1.2s cubic-bezier(.22,.9,.3,1.04) both}
+  #intro .in-truck{position:absolute;left:-2%;bottom:calc(max(10%, 80px) + env(safe-area-inset-bottom));width:min(48vw,300px);filter:drop-shadow(0 10px 12px rgba(0,0,0,.4));animation:inDrive 2.6s 1.2s cubic-bezier(.22,.9,.3,1.04) both}
   @keyframes inDrive{0%{transform:translateX(-130%)}75%{transform:translateX(4%)}88%{transform:translateX(-1.5%) rotate(.6deg)}100%{transform:none}}
   #intro .in-ball{position:absolute;left:50%;top:44%;width:min(90vmin,560px);aspect-ratio:1;margin-left:calc(min(90vmin,560px)/-2);margin-top:calc(min(90vmin,560px)/-2);
     opacity:0;pointer-events:none;filter:drop-shadow(0 20px 30px rgba(0,0,0,.45));z-index:3}
@@ -1039,11 +1039,11 @@ function showCheckConfirm(){
   const place = () => {
     const H = window.innerHeight, top = Math.max(16, H*0.035);
     const tt = document.getElementById("inTitle").getBoundingClientRect();
-    const sc = Math.min(.5, (H*0.12)/tt.height);
+    const sc = Math.min(.75, (H*0.17)/tt.height);
     it.style.setProperty("--ts", sc);
     it.style.setProperty("--ty", (top + tt.height*sc/2 - (tt.top + tt.height/2)) + "px");
     const cc = document.getElementById("inCollab").getBoundingClientRect();
-    it.style.setProperty("--cy", ((H - H*0.06 - cc.height/2) - (cc.top + cc.height/2)) + "px");
+    it.style.setProperty("--cy", ((H - Math.max(10, H*0.025) - cc.height/2) - (cc.top + cc.height/2)) + "px");
   };
   const go = () => { if (it.classList.contains("go")) return; place(); it.classList.add("go"); };
   setTimeout(go, 5200);
