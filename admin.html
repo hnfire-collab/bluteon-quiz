@@ -42,7 +42,7 @@
   <div class="card">
     <h2>使い方</h2>
     <ol class="steps">
-      <li>選手を選んで、アンケートの答えを入れる（入れた内容はこの端末に自動で下書き保存）</li>
+      <li>選手を選んで、アンケートの答えを入れる（入れた内容はこの端末に自動で下書き保存）。空欄の問題は、その選手のクイズでは出ません</li>
       <li>全員分が終わったら（途中でもOK）、いちばん下の「answers.json を作る」を押す</li>
       <li>出てきた中身をコピーして、GitHubの <b>answers.json</b> に上書きして保存</li>
     </ol>
@@ -83,7 +83,7 @@
 const PLAYERS = [
   "西田 有志","中村 駿介","富田 将馬","アントワーヌ・ブリザール","仲本 賢優",
   "山内 晶大","山本 智大","甲斐 優斗","伊賀 亮平","西山 大翔",
-  "西川 馨太郎","ブライアン・バグナス","エバデダン・ラリー","フィニアン・マッカーシー","ミゲル・ロペス"
+  "西川 馨太郎","望月 大亮","ブライアン・バグナス","エバデダン・ラリー","フィニアン・マッカーシー","ミゲル・ロペス"
 ];
 const QUESTIONS = [
   {id:"q1", type:"choice", text:"①災害時に1つだけ持って逃げるなら何を選ぶ？", options:["水","スマートフォン","懐中電灯","バレーボール","その他"]},
@@ -116,8 +116,8 @@ function renderPlayers(){
   document.querySelectorAll(".pbtn").forEach(b => b.onclick = () => { current = PLAYERS[+b.dataset.i]; renderPlayers(); renderForm(); });
 }
 
-function sel(id, opts, val){
-  return `<select data-k="${id}"><option value="">（未入力）</option>${opts.map(o =>
+function sel(id, opts, val, all){
+  return `<select data-k="${id}"><option value="">（未入力＝この問題は出さない）</option>${all ? `<option value="*" ${val==="*"?"selected":""}>全員（誰を選んでも正解）</option>` : ""}${opts.map(o =>
     `<option ${o===val?"selected":""}>${esc(o)}</option>`).join("")}</select>`;
 }
 
@@ -127,9 +127,13 @@ function renderForm(){
   QUESTIONS.forEach(q => {
     html += `<div class="q"><label>${esc(q.text)}</label>`;
     if (q.type === "choice") html += sel(q.id, q.options, a[q.id]);
-    if (q.type === "player") html += sel(q.id, PLAYERS, a[q.id]);
+    if (q.type === "player") html += sel(q.id, PLAYERS, a[q.id], true);
     if (q.type === "kanji") html += `<input type="text" data-k="q7" value="${esc(a.q7)}" placeholder="例：守">
-      <div class="sub"><span>正解にしたい答えが複数あるときは「、」で区切る（例：守、Protect）。英語は大文字・小文字を区別しません。</span></div>`;
+      <div class="sub"><span>正解にしたい答えが複数あるときは「、」で区切る（例：守、Protect）。英語は大文字・小文字を区別しません。</span></div>
+      <div class="sub"><span>答え合わせで見せる答え（なくてもOK。ないときは最初の答え）</span>
+      <input type="text" data-k="q7_show" value="${esc(a.q7_show)}"></div>
+      <div class="sub"><span>理由（なくてもOK）</span>
+      <input type="text" data-k="q7_reason" value="${esc(a.q7_reason)}"></div>`;
     if (q.id === "q1") html += `<div class="sub"><span>「その他」の中身（その他を選んだ選手だけ）</span>
       <input type="text" data-k="q1_other" value="${esc(a.q1_other)}"></div>`;
     if (q.id === "q2") html += `<div class="sub"><span>理由（日本語）※答え合わせの画面に出ます</span>
