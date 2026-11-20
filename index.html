@@ -151,6 +151,7 @@
   .btn-check{background:var(--green);color:#fff}
   .checked{display:inline-block;font-size:24px;font-weight:900;color:var(--green);border:4px solid var(--green);
     border-radius:12px;padding:6px 18px;transform:rotate(-4deg)}
+  .checkbar{background:#e8f6ee;color:#11683c;border-color:var(--green)}
   footer{text-align:center;font-size:11px;color:var(--gray);padding:10px 0 24px}
 </style>
 </head>
@@ -278,6 +279,7 @@ const T = {
     checkBtn:"係員確認（係員が押します）", checkNote:"※参加者の方は押さないでください",
     checkQ:"係員の方ですか？<br>確認済みにすると元に戻せません。", checkNo:"やめる", checkYes:"確認済みにする",
     checked:"係員確認済み",
+    checkbar:"🔧 チェック用：何回でもできます（記録は残りません）", checkAgain:"ほかの選手をチェックする",
     testbar:"⚠ テスト中：いま入っている答えは仮のものです（本人の答えではありません）",
     loadErr:"答えのデータを読み込めませんでした。", loadErr2:"時間をおいて、もう一度ひらいてください。"
   },
@@ -307,6 +309,7 @@ const T = {
     checkBtn:"Staff check (staff only)", checkNote:"* Participants, please don't tap this",
     checkQ:"Are you a staff member?<br>This can't be undone.", checkNo:"Cancel", checkYes:"Mark as checked",
     checked:"Checked by staff",
+    checkbar:"🔧 CHECK MODE: Unlimited tries (nothing is saved)", checkAgain:"Check another player",
     testbar:"⚠ TEST MODE: These are sample answers, not the players' real answers.",
     loadErr:"Couldn't load the answer data.", loadErr2:"Please try again a little later."
   }
@@ -357,16 +360,21 @@ function render(){
   else showTop();
 }
 /* ===== 1回だけ：この端末の記録 ===== */
+// URLの最後に ?check=1 をつけると「チェック用」：記録を残さず、何回でもできる
+const CHECK = new URLSearchParams(location.search).get("check") === "1";
 const playKey = () => "bq_play_" + (DATA.test ? "test" : "live");
 function savePlay(done){
   if (done && !state.doneAt) state.doneAt = Date.now();
+  if (CHECK) return;
   try{ localStorage.setItem(playKey(), JSON.stringify({player:state.player, step:state.step, answers:state.answers, done:!!done,
     doneAt:state.doneAt||null, checkedAt:state.checkedAt||null})); }catch(e){}
 }
 function loadPlay(){
+  if (CHECK) return null;
   try{ const s = localStorage.getItem(playKey()); return s ? JSON.parse(s) : null; }catch(e){ return null; }
 }
 function testBar(){
+  if (CHECK) app.insertAdjacentHTML("afterbegin", `<div class="testbar checkbar">${t().checkbar}</div>`);
   if (!DATA.test) return;
   app.insertAdjacentHTML("afterbegin", `<div class="testbar">${t().testbar}</div>`);
 }
@@ -521,7 +529,10 @@ function showResult(){
            <div class="muted">${t().checkNote}</div>`}
     </div>
     <div class="card"><h2>${t().review}</h2>${rows}</div>
-    <p class="center muted">${t().doneNote}</p>`;
+    ${CHECK ? `<button class="btn btn-main" id="again">${t().checkAgain}</button>`
+            : `<p class="center muted">${t().doneNote}</p>`}`;
+  const again = document.getElementById("again");
+  if (again) again.onclick = () => { state = {screen:"top", player:null, step:0, answers:{}}; showTop(); };
   const chk = document.getElementById("chk");
   if (chk) chk.onclick = showCheckConfirm;
   startClock();
