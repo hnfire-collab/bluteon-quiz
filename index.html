@@ -511,6 +511,12 @@
   #intro.hit .in-flash{animation:flash .45s ease-out both}
   #intro.hit .in-bg{animation:inShake .45s cubic-bezier(.36,.07,.19,.97) both}
   @keyframes inShake{10%,90%{transform:translate(-2px,1px)}20%,80%{transform:translate(5px,-3px)}30%,50%,70%{transform:translate(-9px,4px)}40%,60%{transform:translate(9px,-4px)}}
+  .sampleq{margin:12px 0 2px;border:2px dashed #9db6e2;border-radius:14px;padding:10px 14px;background:#f5f8ff}
+  .sampleq .sq-h{font-size:13px;font-weight:900;color:var(--blue)}
+  .sampleq ul{list-style:none;margin:4px 0 0}
+  .sampleq li{font-size:15px;font-weight:800;color:var(--blue-dark);padding-left:1.1em;text-indent:-1.1em;line-height:1.5;margin-top:3px}
+  .sampleq li::before{content:"Q.";color:var(--red);font-style:italic;font-weight:900;margin-right:.25em}
+  .sampleq .sq-more{text-align:right;font-size:13px;font-weight:700;color:var(--gray);margin-top:2px}
 </style>
 </head>
 <body>
@@ -603,7 +609,7 @@ const T = {
   ja:{
     sub:"大阪ブルテオン × 枚方寝屋川消防組合", title:"選手アンケート 回答予想クイズ",
     foot:"大阪ブルテオン × 枚方寝屋川消防組合 コラボ企画",
-    introH:"選手の回答を予想しよう！", heroTitle:["選手アンケート","回答予想クイズ"], goBtn:"クイズに挑戦する", ribbonTop:"クイズに挑戦！",
+    introH:"選手の回答を予想しよう！", sampleH:"アンケートの質問をちょっとだけ公開！", sampleMore:"ほか、全7問", heroTitle:["選手アンケート","回答予想クイズ"], goBtn:"クイズに挑戦する", ribbonTop:"クイズに挑戦！",
     intro:n=>`大阪ブルテオンの選手に、消防に関するアンケートに答えてもらいました。<br>選手が<strong>どのように回答したか</strong>を予想して、正解を当てるクイズです。`,
     steps:["回答を予想したい選手を<b>1人</b>選ぶ","その選手が選んだと思う答えをタップする","最後に何問当たったかが出るので、<b>係員に見せてね</b>"],
     rule:"挑戦できるのは1人1回・選手は1人だけ",
@@ -634,7 +640,7 @@ const T = {
   en:{
     sub:"OSAKA BLUTEON × Hirakata Neyagawa Fire Dept.", title:"Guess the Player's Answers!",
     foot:"OSAKA BLUTEON × Hirakata Neyagawa Fire Department Collaboration",
-    introH:"Can you guess their answers?", heroTitle:["Player Survey","Answer Quiz"], goBtn:"Take the quiz", ribbonTop:"Quiz Challenge!",
+    introH:"Can you guess their answers?", sampleH:"A sneak peek at the survey questions!", sampleMore:"and more — 7 questions in total", heroTitle:["Player Survey","Answer Quiz"], goBtn:"Take the quiz", ribbonTop:"Quiz Challenge!",
     intro:n=>`Osaka Bluteon players answered a survey from the fire department.<br>Guess <strong>how a player answered</strong>.`,
     steps:["Choose <b>one</b> player","Tap the answer you think the player chose","See how many you got right and <b>show it to a staff member</b>"],
     rule:"One try per person, with one player only",
@@ -780,6 +786,7 @@ function showTop(){
     <div class="card fancy">
       <h2 class="hh2"><span class="slashes"><i></i><i></i></span><span class="hh2t">${T0.introH}</span><span class="megar">${ICON.mega}</span></h2>
       <p class="lead">${T0.intro()}</p>
+      <div class="sampleq"><div class="sq-h">${T0.sampleH}</div><ul>${["q1","q4"].map(id => `<li>${esc(QUESTIONS.find(q=>q.id===id)[lang])}</li>`).join("")}</ul><div class="sq-more">${T0.sampleMore}</div></div>
       <ol class="hsteps">${T0.steps.map((x,i)=>`<li><span class="num">${i+1}</span><span class="ic">${ICON[["person","board","trophy"][i]]}</span><span class="tx">${x}</span></li>`).join("")}</ol>
       <div class="hrule"><span class="wi">${ICON.warn}</span>${T0.rule}</div>
     </div>
