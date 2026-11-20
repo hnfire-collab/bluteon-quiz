@@ -214,6 +214,7 @@ const PLAYERS = [
   {ja:"伊賀 亮平", en:"Ryohei Iga"},
   {ja:"西山 大翔", en:"Hiroto Nishiyama"},
   {ja:"西川 馨太郎", en:"Keitaro Nishikawa"},
+  {ja:"望月 大亮", en:"Daisuke Mochizuki"},
   {ja:"ブライアン・バグナス", en:"Bryan Bagunas"},
   {ja:"エバデダン・ラリー", en:"Larry Evbade-Dan"},
   {ja:"フィニアン・マッカーシー", en:"Fynnian McCarthy"},
@@ -255,7 +256,7 @@ const T = {
     sub:"大阪ブルテオン × 枚方寝屋川消防組合", title:"選手アンケート 答え当てクイズ",
     foot:"大阪ブルテオン × 枚方寝屋川消防組合 コラボ企画",
     introH:"選手の答えを当てよう！",
-    intro:n=>`大阪ブルテオンの選手に、消防のアンケートに答えてもらいました。<br>その選手が<strong>どう答えたか</strong>を予想するクイズです（全${n}問）。`,
+    intro:n=>`大阪ブルテオンの選手に、消防のアンケートに答えてもらいました。<br>その選手が<strong>どう答えたか</strong>を予想するクイズです。`,
     steps:["答えを当てたい選手を<b>1人</b>選ぶ","その選手がアンケートで選んだ答えを予想してタップ","最後に何問当たったかが出るので、<b>係員に見せてね</b>"],
     rule:"挑戦できるのは1人1回・選手は1人だけ",
     chooseH:"どの選手の答えを当てる？", chooseHint:"選手の名前をタップしてね", preparing:"準備中", allPreparing:"ただいま準備中です。もう少し待ってね。",
@@ -273,7 +274,7 @@ const T = {
     confirmTxt:"回答できるのは<strong>1回だけ</strong>です。<br>選手を決めたら、あとから変えられません。",
     confirmOk:"挑戦する！", confirmBack:"選びなおす",
     doneNote:"回答は1回だけです。参加ありがとうございました！",
-    answeredAt:"回答した日時", nowLabel:"いまの時刻", showStaff:"この画面を係員に見せてね",
+    everyone:"全員！", answeredAt:"回答した日時", nowLabel:"いまの時刻", showStaff:"この画面を係員に見せてね",
     checkBtn:"係員確認（係員が押します）", checkNote:"※参加者の方は押さないでください",
     checkQ:"係員の方ですか？<br>確認済みにすると元に戻せません。", checkNo:"やめる", checkYes:"確認済みにする",
     checked:"係員確認済み",
@@ -284,7 +285,7 @@ const T = {
     sub:"OSAKA BLUTEON × Hirakata Neyagawa Fire Dept.", title:"Guess the Player's Answers!",
     foot:"OSAKA BLUTEON × Hirakata Neyagawa Fire Department Collaboration",
     introH:"Can you guess their answers?",
-    intro:n=>`Osaka Bluteon players answered a survey from the fire department.<br>Guess <strong>how a player answered</strong> (${n} questions).`,
+    intro:n=>`Osaka Bluteon players answered a survey from the fire department.<br>Guess <strong>how a player answered</strong>.`,
     steps:["Choose <b>one</b> player","Tap the answer you think the player chose","See how many you got right and <b>show it to a staff member</b>"],
     rule:"One try per person, with one player only",
     chooseH:"Choose a player", chooseHint:"Tap a player's name", preparing:"Coming soon", allPreparing:"Coming soon. Please check back later!",
@@ -302,7 +303,7 @@ const T = {
     confirmTxt:"You can play <strong>only once</strong>.<br>Once you choose a player, you can't change.",
     confirmOk:"Let's go!", confirmBack:"Choose again",
     doneNote:"You can only play once. Thank you for joining!",
-    answeredAt:"Answered", nowLabel:"Current time", showStaff:"Please show this screen to a staff member",
+    everyone:"All of them!", answeredAt:"Answered", nowLabel:"Current time", showStaff:"Please show this screen to a staff member",
     checkBtn:"Staff check (staff only)", checkNote:"* Participants, please don't tap this",
     checkQ:"Are you a staff member?<br>This can't be undone.", checkNo:"Cancel", checkYes:"Mark as checked",
     checked:"Checked by staff",
@@ -326,10 +327,12 @@ const pName = ja => { const p = PLAYERS.find(x => x.ja === ja); return p ? p[lan
 const optLabel = (q, ja) => { const o = (q.options||[]).find(x => x.ja === ja); return o ? o[lang] : ja; };
 const valLabel = (q, v) => q.type==="player" ? pName(v) : q.type==="choice" ? optLabel(q, v) : v;
 
-function isReady(name){
-  const a = DATA.players[name];
-  return a && QUESTIONS.every(q => a[q.id] && String(a[q.id]).trim() !== "");
+// その選手が答えている問題だけを出す（空欄の問題は飛ばす）
+function playerQs(name){
+  const a = DATA.players[name] || {};
+  return QUESTIONS.filter(q => a[q.id] && String(a[q.id]).trim() !== "");
 }
+function isReady(name){ return playerQs(name).length > 0; }
 
 function setLang(l){
   lang = l;
@@ -375,7 +378,7 @@ function showTop(){
   app.innerHTML = `
     <div class="card">
       <h2>${t().introH}</h2>
-      <p class="lead">${t().intro(QUESTIONS.length)}</p>
+      <p class="lead">${t().intro()}</p>
       <ol class="steps">${t().steps.map((x,i)=>`<li><span class="num">${i+1}</span><span>${x}</span></li>`).join("")}</ol>
       <div class="rule">${t().rule}</div>
     </div>
@@ -384,10 +387,10 @@ function showTop(){
       <div class="sub-hint">${t().chooseHint}</div>
       ${readyCount === 0 ? `<p class="muted">${t().allPreparing}</p>` : ""}
       <div class="grid">
-        ${PLAYERS.map((p,i) => `
-          <button class="opt" data-i="${i}" ${isReady(p.ja) ? "" : "disabled"}>
-            ${esc(p[lang]).replace(/・/g,"・<wbr>")}${lang==="ja" ? "<wbr> 選手" : ""}${isReady(p.ja) ? "" : `<small>${t().preparing}</small>`}
-          </button>`).join("")}
+        ${PLAYERS.map((p,i) => isReady(p.ja) ? `
+          <button class="opt" data-i="${i}">
+            ${esc(p[lang]).replace(/・/g,"・<wbr>")}${lang==="ja" ? "<wbr> 選手" : ""}
+          </button>` : "").join("")}
       </div>
     </div>`;
   app.querySelectorAll(".opt[data-i]").forEach(b => b.onclick = () => showConfirm(PLAYERS[+b.dataset.i].ja));
@@ -419,7 +422,8 @@ function showConfirm(name){
 /* ===== 画面：問題 ===== */
 function showQuestion(){
   state.screen = "q";
-  const q = QUESTIONS[state.step];
+  const QS = playerQs(state.player);
+  const q = QS[state.step];
   const cur = state.answers[q.id] ?? "";
   let body = "";
   if (q.type === "choice"){
@@ -431,11 +435,11 @@ function showQuestion(){
   } else {
     body = `<input type="text" id="kanji" maxlength="20" placeholder="${esc(t().placeholder)}" value="${esc(cur)}" autocomplete="off">`;
   }
-  const last = state.step === QUESTIONS.length - 1;
+  const last = state.step === QS.length - 1;
   app.innerHTML = `
     <div class="card">
-      <div class="progress">${QUESTIONS.map((_,i)=>`<span class="${i<=state.step?"done":""}"></span>`).join("")}</div>
-      <div class="qno">${t().qno(state.step+1, QUESTIONS.length)}</div>
+      <div class="progress">${QS.map((_,i)=>`<span class="${i<=state.step?"done":""}"></span>`).join("")}</div>
+      <div class="qno">${t().qno(state.step+1, QS.length)}</div>
       <div class="askbox">
         <div class="lbl">${t().askLbl}</div>
         <div class="qtext">${esc(q[lang])}</div>
@@ -469,6 +473,7 @@ function showQuestion(){
 const splitAns = s => String(s ?? "").split(/[、,，\/／]/).map(x => x.trim()).filter(Boolean);
 function isCorrect(q, mine, correct){
   if (q.type === "kanji") return splitAns(correct).map(norm).includes(norm(mine));
+  if (q.type === "player" && correct === "*") return true;   // 「全員」と答えた問題は誰を選んでも正解
   return norm(mine) === norm(correct);
 }
 
@@ -477,23 +482,27 @@ function showResult(){
   state.screen = "result";
   const a = DATA.players[state.player];
   let ok = 0;
-  const rows = QUESTIONS.map((q,i) => {
+  const QS = playerQs(state.player);
+  const rows = QS.map((q,i) => {
     const mine = state.answers[q.id];
     const correct = a[q.id];
     const hit = isCorrect(q, mine, correct);
     if (hit) ok++;
-    let shown = q.type==="kanji" ? splitAns(correct).join(" / ") : valLabel(q, correct);
+    let shown = q.type==="kanji" ? (a.q7_show || splitAns(correct)[0])
+              : (q.type==="player" && correct==="*") ? t().everyone : valLabel(q, correct);
     if (q.id==="q1" && correct==="その他" && a.q1_other) shown += `（${a.q1_other}）`;
     let note = "";
     const reason = lang==="en" ? (a.q2_reason_en || a.q2_reason) : a.q2_reason;
     if (q.id==="q2" && reason) note = `<div class="note">${t().reason}：${esc(reason)}</div>`;
+    const r7 = lang==="en" ? (a.q7_reason_en || a.q7_reason) : a.q7_reason;
+    if (q.id==="q7" && r7) note = `<div class="note">${t().reason}：${esc(r7)}</div>`;
     return `<div class="res"><div class="head">
       <div class="mark ${hit?"ok":"ng"}">${hit?"○":"×"}</div>
       <div><div class="q">${t().qlabel(i+1)}　${esc(q[lang])}</div>
       <div class="a">${t().theirs}：<b>${esc(shown)}</b>　／　${t().yours}：${esc(valLabel(q, mine))}</div>${note}</div>
     </div></div>`;
   }).join("");
-  const n = QUESTIONS.length;
+  const n = QS.length;
   app.innerHTML = `
     <div class="card">
       <span class="player-tag">${esc(pName(state.player))}${t().sama}</span>
@@ -621,7 +630,7 @@ fetch("answers.json?t=" + Date.now())
     const saved = loadPlay();
     if (saved && saved.player && DATA.players[saved.player]){
       state = {screen: saved.done ? "result" : "q", player:saved.player,
-               step: Math.min(saved.step||0, QUESTIONS.length-1), answers: saved.answers||{},
+               step: Math.min(saved.step||0, playerQs(saved.player).length-1), answers: saved.answers||{},
                doneAt: saved.doneAt||null, checkedAt: saved.checkedAt||null};
     }
     loaded = true; render();
